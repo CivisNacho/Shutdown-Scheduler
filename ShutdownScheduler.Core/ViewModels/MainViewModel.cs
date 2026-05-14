@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Input;
 using Shutdown_Scheduler.Models;
 using Shutdown_Scheduler.Services;
@@ -10,8 +9,9 @@ namespace Shutdown_Scheduler.ViewModels;
 public sealed class MainViewModel : ObservableObject
 {
     private readonly SchedulingService _scheduler;
-    private readonly WidgetService _widget;
+    private readonly IWidgetService _widget;
     private readonly LocalizationService _loc;
+    private readonly IUserNotificationService _notifications;
 
     private OptionItem<PowerAction> _selectedAction;
     private OptionItem<ScheduleMode> _selectedScheduleMode;
@@ -43,11 +43,12 @@ public sealed class MainViewModel : ObservableObject
     private bool _updatingTimeParts;
     private DateTime? _selectedTargetDateTime;
 
-    public MainViewModel(SchedulingService scheduler, WidgetService widget, LocalizationService loc)
+    public MainViewModel(SchedulingService scheduler, IWidgetService widget, LocalizationService loc, IUserNotificationService notifications)
     {
         _scheduler = scheduler;
         _widget = widget;
         _loc = loc;
+        _notifications = notifications;
 
         Actions = new(Enum.GetValues<PowerAction>().Select(action => new OptionItem<PowerAction>(action, loc.ActionLabel(action))));
         ScheduleModes = new(Enum.GetValues<ScheduleMode>().Select(mode => new OptionItem<ScheduleMode>(mode, loc.ScheduleModeLabel(mode))));
@@ -90,6 +91,15 @@ public sealed class MainViewModel : ObservableObject
         ScheduleCommand = new RelayCommand(_ => Schedule());
         CancelCommand = new RelayCommand(_ => _scheduler.Cancel(), _ => HasActiveSchedule);
         ApplyWidgetCommand = new RelayCommand(_ => ApplyWidget());
+        AddNetworkConditionCommand = new RelayCommand(_ => AddCondition(ConditionType.Network), _ => !HasCondition(ConditionType.Network));
+        AddCpuConditionCommand = new RelayCommand(_ => AddCondition(ConditionType.Cpu), _ => !HasCondition(ConditionType.Cpu));
+        RemoveConditionCommand = new RelayCommand(condition =>
+        {
+            if (condition is ConditionEditorItem item)
+            {
+                RemoveCondition(item);
+            }
+        });
 
         _scheduler.ScheduleChanged += (_, _) => RefreshActiveState();
         _scheduler.Tick += (_, _) => RefreshActiveState();
@@ -101,6 +111,7 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<OptionItem<ScheduleMode>> ScheduleModes { get; }
     public ObservableCollection<OptionItem<ExecutionMode>> ExecutionModes { get; }
     public ObservableCollection<OptionItem<NetworkUnit>> NetworkUnits { get; }
+    public ObservableCollection<ConditionEditorItem> Conditions { get; } = new();
     public ObservableCollection<OptionItem<WidgetDisplayMode>> WidgetModes { get; }
     public ObservableCollection<OptionItem<WidgetSizePreset>> WidgetSizePresets { get; }
     public ObservableCollection<OptionItem<WidgetAnchor>> WidgetAnchors { get; }
@@ -111,13 +122,20 @@ public sealed class MainViewModel : ObservableObject
     public ICommand ScheduleCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand ApplyWidgetCommand { get; }
+    public ICommand AddNetworkConditionCommand { get; }
+    public ICommand AddCpuConditionCommand { get; }
+    public ICommand RemoveConditionCommand { get; }
 
     public string AppTitle => _loc.T("AppTitle");
     public string Subtitle => _loc.T("Subtitle");
     public string ActionLabel => _loc.T("Action");
     public string ScheduleLabel => _loc.T("Schedule");
-    public string ExecutionLabel => _loc.T("Execution");
+    public string ExecutionLabel => _loc.T("Force admin?");
     public string ConditionsLabel => _loc.T("Conditions");
+    public string AddConditionLabel => _loc.T("AddCondition");
+    public string AddConditionDialogTitle => _loc.T("AddConditionDialogTitle");
+    public string RemoveConditionLabel => _loc.T("RemoveCondition");
+    public string NoConditionsLabel => _loc.T("NoConditions");
     public string WidgetLabel => _loc.T("Widget");
     public string ActiveScheduleLabel => _loc.T("ActiveSchedule");
     public string ScheduleButtonLabel => HasActiveSchedule ? _loc.T("ReplaceButton") : _loc.T("ScheduleButton");
@@ -274,6 +292,10 @@ public sealed class MainViewModel : ObservableObject
     public string NetworkThreshold { get => _networkThreshold; set => SetProperty(ref _networkThreshold, value); }
     public bool CpuConditionEnabled { get => _cpuConditionEnabled; set => SetProperty(ref _cpuConditionEnabled, value); }
     public string CpuThreshold { get => _cpuThreshold; set => SetProperty(ref _cpuThreshold, value); }
+    public bool CanAddNetworkCondition => !HasCondition(ConditionType.Network);
+    public bool CanAddCpuCondition => !HasCondition(ConditionType.Cpu);
+    public bool HasConditions => Conditions.Count > 0;
+    public bool HasNoConditions => !HasConditions;
     public bool WidgetEnabled { get => _widget.Settings.Enabled; set { _widget.Settings.Enabled = value; OnPropertyChanged(); ApplyWidget(); } }
     public bool WidgetShowOnAllScreens { get => _widget.Settings.ShowOnAllScreens; set { _widget.Settings.ShowOnAllScreens = value; OnPropertyChanged(); ApplyWidget(); } }
     public double WidgetLeft { get => _widget.Settings.Left; set { _widget.Settings.Left = value; OnPropertyChanged(); } }
@@ -303,7 +325,7 @@ public sealed class MainViewModel : ObservableObject
     {
         if (!TryBuildRequest(out var request, out var error))
         {
-            System.Windows.MessageBox.Show(error, _loc.T("ValidationTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _notifications.ShowWarning(_loc.T("ValidationTitle"), error);
             return;
         }
 
@@ -325,6 +347,8 @@ public sealed class MainViewModel : ObservableObject
         {
             return Fail(_loc.T("ValidationOffsetRange"), out request, out error);
         }
+
+        SyncConditionFlags();
 
         if (NetworkConditionEnabled && (!double.TryParse(NetworkThreshold, out var networkThreshold) || networkThreshold < 0))
         {
@@ -364,6 +388,43 @@ public sealed class MainViewModel : ObservableObject
         if (NetworkConditionEnabled) parts.Add($"{_loc.T("NetworkShort")} < {ConditionEvaluationService.FormatBytes(thresholdBytes)}");
         if (CpuConditionEnabled) parts.Add($"{_loc.T("CpuShort")} < {CpuThreshold}%");
         return parts.Count == 0 ? _loc.T("NoConditions") : string.Join(" AND ", parts);
+    }
+
+    private void AddCondition(ConditionType type)
+    {
+        if (HasCondition(type)) return;
+
+        Conditions.Add(new ConditionEditorItem(type, GetConditionLabel(type)));
+        SyncConditionFlags();
+        RefreshConditionState();
+    }
+
+    private void RemoveCondition(ConditionEditorItem item)
+    {
+        Conditions.Remove(item);
+        SyncConditionFlags();
+        RefreshConditionState();
+    }
+
+    private bool HasCondition(ConditionType type) => Conditions.Any(condition => condition.Type == type);
+
+    private string GetConditionLabel(ConditionType type)
+        => type == ConditionType.Network ? _loc.T("NetworkBelow") : _loc.T("CpuBelow");
+
+    private void SyncConditionFlags()
+    {
+        NetworkConditionEnabled = HasCondition(ConditionType.Network);
+        CpuConditionEnabled = HasCondition(ConditionType.Cpu);
+    }
+
+    private void RefreshConditionState()
+    {
+        OnPropertyChanged(nameof(CanAddNetworkCondition));
+        OnPropertyChanged(nameof(CanAddCpuCondition));
+        OnPropertyChanged(nameof(HasConditions));
+        OnPropertyChanged(nameof(HasNoConditions));
+        (AddNetworkConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddCpuConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     private static bool Fail(string message, out ScheduleRequest request, out string error)
@@ -441,9 +502,23 @@ public sealed class MainViewModel : ObservableObject
 
         var remaining = active.TargetTime - DateTime.Now;
         if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-        Remaining = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
+        Remaining = RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
         ActiveSummary = $"{active.Request.DisplaySummary}\n{_loc.T("Mode")}: {_loc.ExecutionModeLabel(active.Request.ExecutionMode)}\n{_loc.T("Conditions")}: {active.Request.ConditionsSummary}";
         StatusSummary = $"{_loc.T("Status")}: {_loc.StatusLabel(active.Status)}\n{_loc.T("Remaining")}: {Remaining}\n{active.StatusDetails}";
         _widget.Update(active);
     }
+}
+
+public sealed class ConditionEditorItem
+{
+    public ConditionEditorItem(ConditionType type, string label)
+    {
+        Type = type;
+        Label = label;
+    }
+
+    public ConditionType Type { get; }
+    public string Label { get; }
+    public bool IsNetwork => Type == ConditionType.Network;
+    public bool IsCpu => Type == ConditionType.Cpu;
 }

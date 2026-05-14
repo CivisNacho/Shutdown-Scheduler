@@ -1,22 +1,21 @@
-using System.Windows.Threading;
 using Shutdown_Scheduler.Models;
 
 namespace Shutdown_Scheduler.Services;
 
 public sealed class SchedulingService
 {
-    private readonly DispatcherTimer _timer;
+    private readonly IAppTimer _timer;
     private readonly ConditionEvaluationService _conditions;
     private readonly ActionExecutionService _executor;
     private readonly LocalizationService _loc;
     private DateTime _lastTick = DateTime.Now;
 
-    public SchedulingService(ConditionEvaluationService conditions, ActionExecutionService executor, LocalizationService loc)
+    public SchedulingService(ConditionEvaluationService conditions, ActionExecutionService executor, LocalizationService loc, IAppTimerFactory timerFactory)
     {
         _conditions = conditions;
         _executor = executor;
         _loc = loc;
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _timer = timerFactory.Create(TimeSpan.FromSeconds(1));
         _timer.Tick += OnTick;
     }
 

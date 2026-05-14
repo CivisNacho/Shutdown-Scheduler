@@ -9,4 +9,14 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ShutdownScheduler.Core\**\*.cs" />
+    <EmbeddedResource Remove="ShutdownScheduler.Core\**\*" />
+    <None Remove="ShutdownScheduler.Core\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="ShutdownScheduler.Core\ShutdownScheduler.Core.csproj" />
+  </ItemGroup>
 </Project>

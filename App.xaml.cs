@@ -1,68 +1,42 @@
-using System.Windows;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler.Services;
 using Shutdown_Scheduler.ViewModels;
 
-namespace Shutdown_Scheduler;
-
-public partial class App : System.Windows.Application
+namespace Shutdown_Scheduler_WinUI
 {
-    private TrayService? _tray;
-    private CpuMonitorService? _cpu;
-
-    protected override void OnStartup(StartupEventArgs e)
+    public partial class App : Application
     {
-        base.OnStartup(e);
+        private Window? _window;
+        private CpuMonitorService? _cpu;
 
-        var localization = new LocalizationService();
-        _cpu = new CpuMonitorService();
-        var network = new NetworkMonitorService();
-        var conditions = new ConditionEvaluationService(_cpu, network, localization);
-        var executor = new ActionExecutionService();
-        var scheduler = new SchedulingService(conditions, executor, localization);
-        var widget = new WidgetService(new WidgetSettingsStore(), localization);
-        _tray = new TrayService(localization);
-
-        var viewModel = new MainViewModel(scheduler, widget, localization);
-        var mainWindow = new MainWindow(scheduler, _tray, localization)
+        public App()
         {
-            DataContext = viewModel
-        };
+            InitializeComponent();
+        }
 
-        _tray.OpenRequested += (_, _) =>
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            mainWindow.Show();
-            mainWindow.WindowState = WindowState.Normal;
-            mainWindow.Activate();
-        };
+            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            var localization = new LocalizationService();
+            _cpu = new CpuMonitorService();
+            var network = new NetworkMonitorService();
+            var conditions = new ConditionEvaluationService(_cpu, network, localization);
+            var executor = new ActionExecutionService();
+            var scheduler = new SchedulingService(
+                conditions,
+                executor,
+                localization,
+                new WinUiAppTimerFactory(dispatcherQueue));
 
-        _tray.CancelRequested += (_, _) => scheduler.Cancel();
+            var widget = new WinUiWidgetService(new WidgetSettingsStore(), localization, dispatcherQueue);
+            var notifications = new WinUiUserNotificationService(() => _window?.Content.XamlRoot, dispatcherQueue);
+            var viewModel = new MainViewModel(scheduler, widget, localization, notifications);
 
-        _tray.ExitRequested += (_, _) =>
-        {
-            scheduler.Cancel();
-            Shutdown();
-        };
-
-        scheduler.ScheduleChanged += (_, _) =>
-        {
-            if (scheduler.ActiveSchedule is not null)
-            {
-                _tray.Show(true);
-            }
-            else if (mainWindow.IsVisible)
-            {
-                _tray.Hide();
-            }
-        };
-
-        mainWindow.Show();
-    }
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        _tray?.Dispose();
-        _cpu?.Dispose();
-        base.OnExit(e);
+            _window = new MainWindow(viewModel, scheduler, localization);
+            _window.Closed += (_, _) => _cpu?.Dispose();
+            _window.Activate();
+        }
     }
 }

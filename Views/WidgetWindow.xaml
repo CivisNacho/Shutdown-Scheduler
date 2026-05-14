@@ -1,63 +1,82 @@
-<Window x:Class="Shutdown_Scheduler.Views.WidgetWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        WindowStyle="None" ResizeMode="NoResize" Topmost="True" ShowInTaskbar="False"
-        AllowsTransparency="True" Background="Transparent"
-        ShowActivated="False"
-        FontFamily="Segoe UI">
-    <Window.Resources>
-        <SolidColorBrush x:Key="WidgetShell" Color="#EE07111D"/>
-        <SolidColorBrush x:Key="WidgetCard" Color="#F00D1A2A"/>
-        <SolidColorBrush x:Key="Stroke" Color="#7CB9E8" Opacity="0.30"/>
-        <SolidColorBrush x:Key="StrokeStrong" Color="#6EC1FF" Opacity="0.75"/>
-        <SolidColorBrush x:Key="TextDim" Color="#B5C8DE"/>
-        <SolidColorBrush x:Key="Accent" Color="#58B6FF"/>
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Shutdown_Scheduler_WinUI.Views.WidgetWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Shutdown Scheduler Widget">
 
-        <LinearGradientBrush x:Key="CardGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#11233A" Offset="0"/>
-            <GradientStop Color="#0D1A2A" Offset="1"/>
-        </LinearGradientBrush>
-    </Window.Resources>
-
-    <Border x:Name="OuterShell"
-            Background="{StaticResource WidgetShell}"
-            BorderBrush="{StaticResource Stroke}"
-            BorderThickness="1"
-            CornerRadius="12"
-            Padding="10">
-        <Border x:Name="InnerCard"
-                Background="{StaticResource WidgetCard}"
-                BorderBrush="{StaticResource StrokeStrong}"
-                BorderThickness="1"
-                CornerRadius="9"
-                Padding="12,8">
-            <Grid>
+    <Grid x:Name="Root" Background="Transparent">
+        <Border
+            x:Name="WidgetShell"
+            Padding="14,10"
+            CornerRadius="8"
+            Background="{ThemeResource WidgetSurfaceBrush}"
+            BorderBrush="{ThemeResource GlassPanelStrongBorderBrush}"
+            BorderThickness="1">
+            <Grid ColumnSpacing="12" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock x:Name="HeaderText"
-                           Grid.Row="0"
-                           Text="SCHEDULE"
-                           Foreground="{StaticResource TextDim}"
-                           FontSize="11"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,4"/>
+                <Border
+                    Grid.RowSpan="2"
+                    Width="4"
+                    CornerRadius="2"
+                    Background="{ThemeResource WidgetAccentBrush}" />
 
-                <TextBlock x:Name="WidgetText"
-                           Grid.Row="1"
-                           Text="--:--:--"
-                           Foreground="{StaticResource Accent}"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           TextWrapping="NoWrap"
-                           TextTrimming="CharacterEllipsis"
-                           TextAlignment="Center"/>
+                <TextBlock
+                    x:Name="ActionText"
+                    Grid.Column="1"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    LineHeight="15"
+                    MaxLines="1"
+                    TextWrapping="NoWrap"
+                    TextTrimming="CharacterEllipsis"
+                    Foreground="{ThemeResource SubtleTextBrush}" />
+
+                <TextBlock
+                    x:Name="TimeText"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    FontFamily="{ThemeResource EditorialDisplayFontFamily}"
+                    FontStyle="Italic"
+                    FontSize="28"
+                    FontWeight="SemiBold"
+                    LineHeight="31"
+                    MaxLines="1"
+                    TextWrapping="NoWrap"
+                    Foreground="{ThemeResource HeroValueBrush}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <Border
+                    Grid.Column="2"
+                    Grid.RowSpan="2"
+                    MinWidth="72"
+                    Padding="10,4"
+                    CornerRadius="6"
+                    Background="{ThemeResource WidgetBadgeBrush}"
+                    BorderBrush="{ThemeResource GlassPanelBorderBrush}"
+                    BorderThickness="1"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="ContextText"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        MaxLines="1"
+                        TextWrapping="NoWrap"
+                        TextTrimming="CharacterEllipsis"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource HeroCaptionBrush}" />
+                </Border>
             </Grid>
         </Border>
-    </Border>
+    </Grid>
 </Window>

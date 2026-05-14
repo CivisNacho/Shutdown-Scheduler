@@ -12,7 +12,7 @@ public partial class WarningWindow : Window
         DataContext = new
         {
             TitleText = loc.T("WarningTitle"),
-            MessageText = string.Format(loc.T("WarningText"), loc.ActionLabel(schedule.Request.Action), FormatRemaining(schedule.TargetTime - DateTime.Now)),
+            MessageText = string.Format(loc.T("WarningText"), loc.ActionLabel(schedule.Request.Action), RemainingTimeFormatter.FormatMinutesSeconds(schedule.TargetTime - DateTime.Now)),
             PostponeText = loc.T("Postpone"),
             CancelText = loc.T("CancelButton")
         };
@@ -31,11 +31,5 @@ public partial class WarningWindow : Window
     {
         ShouldCancel = true;
         Close();
-    }
-
-    private static string FormatRemaining(TimeSpan remaining)
-    {
-        if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-        return $"{remaining.Minutes:00}:{remaining.Seconds:00}";
     }
 }

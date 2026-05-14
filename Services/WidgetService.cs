@@ -7,7 +7,7 @@ using Forms = System.Windows.Forms;
 
 namespace Shutdown_Scheduler.Services;
 
-public sealed class WidgetService
+public sealed class WidgetService : IWidgetService
 {
     private const double WidgetEdgeMargin = 8;
     private readonly WidgetSettingsStore _store;
@@ -62,7 +62,7 @@ public sealed class WidgetService
 
         var action = _loc.ActionLabel(schedule.Request.Action);
         var text = Settings.DisplayMode == WidgetDisplayMode.Countdown
-            ? $"{action} {_loc.T("WidgetIn")} {FormatRemaining(schedule.TargetTime - DateTime.Now)}"
+            ? $"{action} {_loc.T("WidgetIn")} {RemainingTimeFormatter.FormatHoursMinutesSeconds(schedule.TargetTime - DateTime.Now)}"
             : $"{action} {_loc.T("WidgetAt")} {schedule.TargetTime:HH:mm}";
         _window!.SetText(text);
         if (!_window.IsVisible) _window.Show();
@@ -137,9 +137,4 @@ public sealed class WidgetService
             rawBounds.Height / scaleY);
     }
 
-    private static string FormatRemaining(TimeSpan remaining)
-    {
-        if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-        return $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
-    }
 }

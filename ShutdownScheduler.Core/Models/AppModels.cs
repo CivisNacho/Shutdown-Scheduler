@@ -44,6 +44,12 @@ public enum NetworkUnit
     Mbs
 }
 
+public enum ConditionType
+{
+    Network,
+    Cpu
+}
+
 public enum WidgetDisplayMode
 {
     Countdown,
