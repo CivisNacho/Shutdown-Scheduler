@@ -1,0 +1,35 @@
+<Window x:Class="Shutdown_Scheduler.Views.WarningWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System.Windows;assembly=PresentationFramework"
+        Height="190" Width="430" WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize" Topmost="True" Background="#020504" FontFamily="Cascadia Mono"
+        Title="{Binding TitleText}">
+    <Border Background="#070A09" BorderThickness="1" Padding="18">
+        <Border.Resources>
+            <SolidColorBrush x:Key="AccentText" Color="{x:Static sys:SystemParameters.WindowGlassColor}"/>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource AccentText}"/>
+                <Setter Property="FontFamily" Value="Cascadia Mono"/>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="#0A0D0C"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentText}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource AccentText}"/>
+                <Setter Property="Padding" Value="12,7"/>
+                <Setter Property="FontFamily" Value="Cascadia Mono"/>
+            </Style>
+        </Border.Resources>
+        <Border.BorderBrush>
+            <StaticResource ResourceKey="AccentText"/>
+        </Border.BorderBrush>
+        <StackPanel>
+            <TextBlock Text="{Binding TitleText}" Foreground="{StaticResource AccentText}" FontFamily="Cascadia Mono" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding MessageText}" TextWrapping="Wrap" FontFamily="Cascadia Mono" Margin="0,14,0,18"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{Binding PostponeText}" Click="Postpone_Click" Margin="0,0,8,0"/>
+                <Button Content="{Binding CancelText}" Click="Cancel_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
