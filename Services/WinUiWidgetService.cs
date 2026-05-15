@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.UI.Dispatching;
 using Shutdown_Scheduler.Models;
 using Shutdown_Scheduler.Persistence;
@@ -6,7 +7,7 @@ using Shutdown_Scheduler_WinUI.Views;
 
 namespace Shutdown_Scheduler.Services;
 
-public sealed class WinUiWidgetService : IWidgetService
+public sealed class WinUiWidgetService : IWidgetService, IDisposable
 {
     private readonly WidgetSettingsStore _store;
     private readonly LocalizationService _loc;
@@ -31,7 +32,7 @@ public sealed class WinUiWidgetService : IWidgetService
         {
             if (!Settings.Enabled)
             {
-                CloseWindow();
+                HideWindow();
                 return;
             }
 
@@ -51,7 +52,15 @@ public sealed class WinUiWidgetService : IWidgetService
         {
             if (!Settings.Enabled || schedule is null)
             {
-                CloseWindow();
+                if (schedule is null)
+                {
+                    CloseWindow();
+                }
+                else
+                {
+                    HideWindow();
+                }
+
                 _store.Save(Settings);
                 return;
             }
@@ -59,6 +68,7 @@ public sealed class WinUiWidgetService : IWidgetService
             EnsureWindow();
             _window?.ApplySettings(Settings);
             UpdateWindowText(schedule);
+            _window?.ShowWidget();
             _store.Save(Settings);
         });
     }
@@ -74,6 +84,11 @@ public sealed class WinUiWidgetService : IWidgetService
         _window.Closed += (_, _) => _window = null;
         _window.ApplySettings(Settings);
         _window.Activate();
+    }
+
+    private void HideWindow()
+    {
+        _window?.HideWidget();
     }
 
     private void CloseWindow()
@@ -100,10 +115,21 @@ public sealed class WinUiWidgetService : IWidgetService
         var timeText = Settings.DisplayMode == WidgetDisplayMode.ExecutionTime
             ? schedule.TargetTime.ToString("HH:mm")
             : RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
-        var contextText = Settings.DisplayMode == WidgetDisplayMode.ExecutionTime
-            ? _loc.T("WidgetAt")
-            : _loc.T("WidgetIn");
+        var conditionIcons = GetConditionIcons(schedule.Request);
+        _window.SetScheduleText(actionText, timeText, conditionIcons);
+    }
 
-        _window.SetScheduleText(actionText, timeText, contextText);
+    private static string GetConditionIcons(ScheduleRequest request)
+    {
+        var icons = new List<string>(3);
+        if (request.NetworkConditionEnabled) icons.Add("\uEC05"); // Wi-Fi
+        if (request.CpuConditionEnabled) icons.Add("\uE7F8"); // CPU-like glyph
+        if (request.BatteryConditionEnabled) icons.Add("\uE850"); // Battery
+        return string.Join('|', icons);
+    }
+
+    public void Dispose()
+    {
+        CloseWindow();
     }
 }

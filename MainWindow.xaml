@@ -12,12 +12,52 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid
-        x:Name="Root"
-        Padding="16"
-        RowSpacing="12"
-        Background="{ThemeResource AppChromeBackgroundBrush}">
+        <Grid
+            x:Name="Root"
+            Padding="12"
+            RowSpacing="8"
+            Background="{ThemeResource AppChromeBackgroundBrush}">
         <Grid.Resources>
+            <DataTemplate x:Key="AppTargetTemplate">
+                <Grid ColumnSpacing="10" MinHeight="28">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="20"
+                        Height="20"
+                        CornerRadius="6"
+                        Background="{ThemeResource GlassPanelSecondaryBackgroundBrush}"
+                        BorderBrush="{ThemeResource GlassPanelBorderBrush}"
+                        BorderThickness="1"
+                        VerticalAlignment="Center">
+                        <Grid>
+                            <FontIcon
+                                Glyph="&#xE8D7;"
+                                FontSize="12"
+                                Foreground="{ThemeResource MutedTextBrush}"
+                                Visibility="{Binding IsIconLoaded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                            <Image
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Source="{Binding Icon}"
+                                Visibility="{Binding IsIconLoaded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Stretch="Uniform" />
+                        </Grid>
+                    </Border>
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding Label}"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </DataTemplate>
+
             <Style x:Key="HeaderMetaTextStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource HeroCaptionBrush}" />
                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
@@ -31,7 +71,7 @@
             </Style>
 
             <Style x:Key="GlassInsetPanelStyle" TargetType="Border">
-                <Setter Property="Padding" Value="10" />
+                <Setter Property="Padding" Value="8" />
                 <Setter Property="CornerRadius" Value="{ThemeResource AppInnerCornerRadius}" />
                 <Setter Property="Background" Value="{ThemeResource GlassPanelInsetBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource GlassPanelBorderBrush}" />
@@ -75,7 +115,7 @@
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[0].Width" Value="*" />
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[1].Width" Value="*" />
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[2].Width" Value="0" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="Auto" />
+                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="*" />
                         <Setter Target="MainSectionsGrid.RowDefinitions[1].Height" Value="Auto" />
                         <Setter Target="MainSectionsGrid.RowDefinitions[2].Height" Value="0" />
                         <Setter Target="SectionRegion2.(Grid.Column)" Value="1" />
@@ -90,13 +130,13 @@
 
                 <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="1560" />
+                        <AdaptiveTrigger MinWindowWidth="1280" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[0].Width" Value="*" />
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[1].Width" Value="*" />
                         <Setter Target="MainSectionsGrid.ColumnDefinitions[2].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="Auto" />
+                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="*" />
                         <Setter Target="MainSectionsGrid.RowDefinitions[1].Height" Value="0" />
                         <Setter Target="MainSectionsGrid.RowDefinitions[2].Height" Value="0" />
                         <Setter Target="SectionRegion2.(Grid.Column)" Value="1" />
@@ -112,12 +152,12 @@
         </VisualStateManager.VisualStateGroups>
 
         <Border
-            Padding="18,14,18,18"
+            Padding="14,10,14,12"
             Background="{ThemeResource WindowHeroBackgroundBrush}"
             BorderBrush="{ThemeResource WindowHeroBorderBrush}"
             BorderThickness="1"
             CornerRadius="{ThemeResource AppCornerRadius}">
-            <Grid ColumnSpacing="18" RowSpacing="12">
+            <Grid ColumnSpacing="14" RowSpacing="8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -127,38 +167,34 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Spacing="8">
+                <StackPanel Spacing="6">
                     <TextBlock
                         Text="SHUTDOWN SCHEDULER"
                         Style="{StaticResource InlineLabelTextStyle}"
                         Foreground="{ThemeResource HeroEyebrowBrush}" />
-                    <Grid ColumnSpacing="18" VerticalAlignment="Center">
+                    <Grid ColumnSpacing="14" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             Text="{Binding Remaining}"
-                            FontFamily="{ThemeResource EditorialDisplayFontFamily}"
+                            FontFamily="Consolas"
                             FontStyle="Italic"
-                            FontSize="36"
+                            FontSize="32"
                             FontWeight="SemiBold"
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource HeroValueBrush}" />
                         <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                             <TextBlock
                                 Text="{Binding ActiveSummary}"
-                                FontFamily="{ThemeResource EditorialDisplayFontFamily}"
-                                FontSize="24"
+                                FontFamily="Consolas"
+                                FontSize="20"
                                 FontStyle="Italic"
                                 MaxLines="1"
                                 Style="{StaticResource HeaderMetaTextStyle}"
                                 Foreground="{ThemeResource HeroValueBrush}"
                                 ToolTipService.ToolTip="{Binding ActiveSummary}" />
-                            <TextBlock
-                                Text="A measured schedule surface for configuring one action with clear timing and conditions."
-                                FontSize="12"
-                                Style="{StaticResource HeaderMetaTextStyle}" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -166,7 +202,7 @@
                 <Grid
                     x:Name="HeaderActionsHost"
                     Grid.Column="1"
-                    ColumnSpacing="8"
+                    ColumnSpacing="6"
                     VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -175,14 +211,14 @@
                     <Button
                         Content="{Binding ScheduleButtonLabel}"
                         Command="{Binding ScheduleCommand}"
-                        MinWidth="148"
+                        MinWidth="136"
                         Style="{ThemeResource GlassPrimaryButtonStyle}" />
                     <Button
                         Grid.Column="1"
                         Content="{Binding CancelButtonLabel}"
                         Command="{Binding CancelCommand}"
                         IsEnabled="{Binding HasActiveSchedule}"
-                        MinWidth="112"
+                        MinWidth="100"
                         Style="{ThemeResource GlassSecondaryButtonStyle}" />
                 </Grid>
 
@@ -194,14 +230,13 @@
             </Grid>
         </Border>
 
-        <ScrollViewer
+        <Grid
             Grid.Row="1"
-            VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled"
-            HorizontalScrollMode="Disabled">
-            <Grid x:Name="MainSectionsGrid" ColumnSpacing="12" RowSpacing="12">
+            x:Name="MainSectionsGrid"
+            ColumnSpacing="10"
+            RowSpacing="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="0" />
                     <RowDefinition Height="0" />
                 </Grid.RowDefinitions>
@@ -212,109 +247,181 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Style="{ThemeResource GlassSectionContainerStyle}">
-                    <Grid RowSpacing="14" MinWidth="260">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="1" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                    <ScrollViewer
+                        HorizontalScrollBarVisibility="Disabled"
+                        HorizontalScrollMode="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        VerticalScrollMode="Enabled">
+                        <Grid RowSpacing="10" MinWidth="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="1" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Text="{Binding ScheduleLabel}" Style="{ThemeResource SectionHeadingTextStyle}" />
-                        <Border Grid.Row="1" Style="{ThemeResource SectionDividerStyle}" />
+                            <TextBlock Text="{Binding ScheduleLabel}" Style="{ThemeResource SectionHeadingTextStyle}" />
+                            <Border Grid.Row="1" Style="{ThemeResource SectionDividerStyle}" />
 
-                        <ComboBox
-                            Grid.Row="2"
-                            Header="{Binding ActionLabel}"
-                            ItemsSource="{Binding Actions}"
-                            DisplayMemberPath="Label"
-                            SelectedItem="{Binding SelectedAction, Mode=TwoWay}"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource GlassComboBoxStyle}" />
+                            <ComboBox
+                                Grid.Row="2"
+                                Header="{Binding ActionLabel}"
+                                ItemsSource="{Binding Actions}"
+                                DisplayMemberPath="Label"
+                                SelectedItem="{Binding SelectedAction, Mode=TwoWay}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top" />
 
-                        <Border
-                            Grid.Row="3"
-                            Style="{StaticResource GlassInsetPanelStyle}"
-                            Visibility="{Binding IsForcedModeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Grid MinHeight="36" ColumnSpacing="10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <CheckBox
-                                    Content="{Binding ForceAdminLabel}"
-                                    IsChecked="{Binding IsForcedAdmin, Mode=TwoWay}"
-                                    VerticalAlignment="Center" />
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="{Binding ExecutionLabel}"
-                                    Style="{ThemeResource FormRowLabelStyle}" />
-                            </Grid>
-                        </Border>
+                            <Border
+                                Grid.Row="3"
+                                Style="{StaticResource GlassInsetPanelStyle}"
+                                Visibility="{Binding IsForcedModeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid MinHeight="32" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox
+                                        Content="{Binding ForceAdminLabel}"
+                                        IsChecked="{Binding IsForcedAdmin, Mode=TwoWay}"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
 
-                        <Border Grid.Row="4" Style="{StaticResource GlassInsetPanelStyle}">
-                            <Grid ColumnSpacing="10" RowSpacing="6">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Text="DATE" Style="{StaticResource InlineLabelTextStyle}" />
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TargetTimeLabel}" Style="{StaticResource InlineLabelTextStyle}" />
-                                <CalendarDatePicker
-                                    x:Name="TargetDatePicker"
-                                    Grid.Row="1"
-                                    PlaceholderText="Pick a date"
-                                    DateChanged="OnTargetDateChanged"
-                                    Height="48"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Top"
-                                    Style="{ThemeResource GlassDatePickerStyle}" />
-                                <TimePicker
-                                    x:Name="TargetTimePicker"
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    TimeChanged="OnTargetTimeChanged"
-                                    Height="48"
-                                    MinWidth="236"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Top"
-                                    Style="{ThemeResource GlassTimePickerStyle}" />
-                            </Grid>
-                        </Border>
+                            <Border
+                                Grid.Row="4"
+                                Style="{StaticResource GlassInsetPanelStyle}"
+                                Visibility="{Binding IsCloseAppAction, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid x:Name="CloseAppPickerPanel" RowSpacing="6">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Text="{Binding AppToCloseLabel}"
+                                            Style="{ThemeResource FormRowLabelStyle}"
+                                            VerticalAlignment="Center" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Content="{Binding RefreshAppsLabel}"
+                                            Click="OnRefreshCloseAppTargetsClick"
+                                            Style="{ThemeResource GlassSecondaryButtonStyle}" />
+                                    </Grid>
+                                    <ComboBox
+                                        Grid.Row="1"
+                                        ItemsSource="{Binding Items}"
+                                        ItemTemplate="{StaticResource AppTargetTemplate}"
+                                        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                                        PlaceholderText="{Binding NoAppsFoundLabel}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Top" />
+                                    <Grid Grid.Row="2" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ProgressRing
+                                            Width="16"
+                                            Height="16"
+                                            IsActive="{Binding IsLoading}"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            VerticalAlignment="Center" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="{Binding LoadingAppsLabel}"
+                                            Foreground="{ThemeResource MutedTextBrush}"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            VerticalAlignment="Center" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Margin="8,0,0,0"
+                                            Text="{Binding NoAppsFoundLabel}"
+                                            Foreground="{ThemeResource MutedTextBrush}"
+                                            Visibility="{Binding HasNoItems, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            VerticalAlignment="Center" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
 
-                        <NumberBox
-                            x:Name="RelativeMinutesNumberBox"
-                            Grid.Row="5"
-                            Header="{Binding MinutesFromNowLabel}"
-                            Text="{Binding RelativeMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            Value="1"
-                            SpinButtonPlacementMode="Inline"
-                            SmallChange="1"
-                            LargeChange="60"
-                            ValidationMode="InvalidInputOverwritten"
-                            ValueChanged="OnRelativeMinutesValueChanged"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource GlassNumberBoxStyle}" />
-                    </Grid>
+                            <Border Grid.Row="5" Style="{StaticResource GlassInsetPanelStyle}">
+                                <Grid ColumnSpacing="8" RowSpacing="6">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="DATE" Style="{StaticResource InlineLabelTextStyle}" />
+                                    <CalendarDatePicker
+                                        x:Name="TargetDatePicker"
+                                        Grid.Row="1"
+                                        PlaceholderText="Pick a date"
+                                        DateChanged="OnTargetDateChanged"
+                                        MinHeight="40"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Top" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Text="{Binding TargetTimeLabel}"
+                                        Style="{StaticResource InlineLabelTextStyle}" />
+                                    <TimePicker
+                                        x:Name="TargetTimePicker"
+                                        Grid.Row="3"
+                                        TimeChanged="OnTargetTimeChanged"
+                                        MinHeight="40"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Top" />
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="6" Style="{StaticResource GlassInsetPanelStyle}">
+                                <Grid ColumnSpacing="12" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Text="{Binding MinutesFromNowLabel}"
+                                        Style="{ThemeResource FormRowLabelStyle}"
+                                        VerticalAlignment="Center"
+                                        TextWrapping="WrapWholeWords" />
+                                    <NumberBox
+                                        x:Name="RelativeMinutesNumberBox"
+                                        Grid.Column="1"
+                                        Text="{Binding RelativeMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Minimum="1"
+                                        Value="15"
+                                        SpinButtonPlacementMode="Inline"
+                                        SmallChange="1"
+                                        LargeChange="60"
+                                        ValidationMode="InvalidInputOverwritten"
+                                        ValueChanged="OnRelativeMinutesValueChanged" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
                 </Border>
 
                 <Border
                     x:Name="SectionRegion2"
                     Grid.Column="1"
                     Style="{ThemeResource GlassSectionContainerStyle}">
-                    <Grid RowSpacing="14" MinWidth="260">
+                    <Grid RowSpacing="10" MinWidth="0" MinHeight="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="1" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="{Binding ConditionsLabel}" Style="{ThemeResource SectionHeadingTextStyle}" />
@@ -341,6 +448,10 @@
                             SelectionMode="None"
                             IsItemClickEnabled="False"
                             Padding="6"
+                            MinHeight="0"
+                            VerticalAlignment="Stretch"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollMode="Enabled"
                             Visibility="{Binding HasConditions, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Style="{ThemeResource GlassListViewStyle}">
                             <ListView.ItemTemplate>
@@ -357,6 +468,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Grid ColumnSpacing="10" MinHeight="36">
                                                 <Grid.ColumnDefinitions>
@@ -366,9 +478,8 @@
                                                 <TextBlock Text="{Binding Label}" Style="{ThemeResource FormRowLabelStyle}" />
                                                 <Button
                                                     Grid.Column="1"
-                                                    Content="{Binding ElementName=Root, Path=DataContext.RemoveConditionLabel}"
-                                                    Command="{Binding ElementName=Root, Path=DataContext.RemoveConditionCommand}"
-                                                    CommandParameter="{Binding}"
+                                                    Content="{Binding RemoveConditionLabel}"
+                                                    Click="OnRemoveConditionClick"
                                                     Style="{ThemeResource GlassSecondaryButtonStyle}" />
                                             </Grid>
 
@@ -380,28 +491,26 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="152" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBox
-                                                    Header="{Binding ElementName=Root, Path=DataContext.Loc[RequiredBelow]}"
-                                                    Text="{Binding ElementName=Root, Path=DataContext.NetworkThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    InputScope="Number"
+                                                <NumberBox
+                                                    Header="{Binding RequiredBelowLabel}"
+                                                    Text="{Binding NetworkThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    ValidationMode="InvalidInputOverwritten"
                                                     HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Top"
-                                                    Style="{ThemeResource GlassTextBoxStyle}" />
+                                                    VerticalAlignment="Top" />
                                                 <ComboBox
                                                     Grid.Column="1"
-                                                    Header="{Binding ElementName=Root, Path=DataContext.Loc[NetworkShort]}"
-                                                    ItemsSource="{Binding ElementName=Root, Path=DataContext.NetworkUnits}"
+                                                    Header="{Binding NetworkShortLabel}"
+                                                    ItemsSource="{Binding NetworkUnits}"
                                                     DisplayMemberPath="Label"
-                                                    SelectedItem="{Binding ElementName=Root, Path=DataContext.SelectedNetworkUnit, Mode=TwoWay}"
+                                                    SelectedItem="{Binding SelectedNetworkUnit, Mode=TwoWay}"
                                                     HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Top"
-                                                    Style="{ThemeResource GlassComboBoxStyle}" />
+                                                    VerticalAlignment="Top" />
                                             </Grid>
 
                                             <NumberBox
                                                 Grid.Row="2"
-                                                Header="{Binding ElementName=Root, Path=DataContext.Loc[CpuShort]}"
-                                                Text="{Binding ElementName=Root, Path=DataContext.CpuThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Header="{Binding CpuShortLabel}"
+                                                Text="{Binding CpuThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Value="20"
                                                 SpinButtonPlacementMode="Inline"
                                                 SmallChange="5"
@@ -410,6 +519,20 @@
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Top"
                                                 Visibility="{Binding IsCpu, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Style="{ThemeResource GlassNumberBoxStyle}" />
+
+                                            <NumberBox
+                                                Grid.Row="3"
+                                                Header="{Binding BatteryShortLabel}"
+                                                Text="{Binding BatteryThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Value="20"
+                                                SpinButtonPlacementMode="Inline"
+                                                SmallChange="5"
+                                                LargeChange="10"
+                                                ValidationMode="InvalidInputOverwritten"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Top"
+                                                Visibility="{Binding IsBattery, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Style="{ThemeResource GlassNumberBoxStyle}" />
                                         </Grid>
                                     </Border>
@@ -423,7 +546,7 @@
                     x:Name="SectionRegion3"
                     Grid.Column="2"
                     Style="{ThemeResource GlassSectionContainerStyle}">
-                    <Grid RowSpacing="14" MinWidth="260">
+                    <Grid RowSpacing="10" MinWidth="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="1" />
@@ -439,24 +562,36 @@
                         <Border Grid.Row="1" Style="{ThemeResource SectionDividerStyle}" />
 
                         <Border Grid.Row="2" Style="{StaticResource GlassInsetPanelStyle}">
-                            <Grid MinHeight="36" ColumnSpacing="10">
+                            <Grid MinHeight="32" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="72" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Loc[EnableWidget]}" Style="{ThemeResource FormRowLabelStyle}" />
-                                <ToggleSwitch Grid.Column="1" IsOn="{Binding WidgetEnabled, Mode=TwoWay}" Style="{ThemeResource FormToggleSwitchStyle}" />
+                                <ToggleSwitch
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    IsOn="{Binding WidgetEnabled, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent=""
+                                    Style="{ThemeResource FormToggleSwitchStyle}" />
                             </Grid>
                         </Border>
 
                         <Border Grid.Row="3" Style="{StaticResource GlassInsetPanelStyle}">
-                            <Grid MinHeight="36" ColumnSpacing="10">
+                            <Grid MinHeight="32" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="72" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding ShowOnAllScreensLabel}" Style="{ThemeResource FormRowLabelStyle}" />
-                                <ToggleSwitch Grid.Column="1" IsOn="{Binding WidgetShowOnAllScreens, Mode=TwoWay}" Style="{ThemeResource FormToggleSwitchStyle}" />
+                                <ToggleSwitch
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    IsOn="{Binding WidgetShowOnAllScreens, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent=""
+                                    Style="{ThemeResource FormToggleSwitchStyle}" />
                             </Grid>
                         </Border>
 
@@ -467,8 +602,7 @@
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetMode, Mode=TwoWay}"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource GlassComboBoxStyle}" />
+                            VerticalAlignment="Top" />
                         <ComboBox
                             Grid.Row="5"
                             Header="{Binding WidgetSizeLabel}"
@@ -476,8 +610,7 @@
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetSizePreset, Mode=TwoWay}"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource GlassComboBoxStyle}" />
+                            VerticalAlignment="Top" />
                         <ComboBox
                             Grid.Row="6"
                             Header="{Binding WidgetPositionLabel}"
@@ -485,11 +618,9 @@
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetAnchor, Mode=TwoWay}"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource GlassComboBoxStyle}" />
+                            VerticalAlignment="Top" />
                     </Grid>
                 </Border>
-            </Grid>
-        </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>

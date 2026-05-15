@@ -9,7 +9,8 @@ public enum PowerAction
     Suspend,
     Hibernate,
     LogOff,
-    LockSession
+    LockSession,
+    CloseApp
 }
 
 public enum ScheduleMode
@@ -47,7 +48,8 @@ public enum NetworkUnit
 public enum ConditionType
 {
     Network,
-    Cpu
+    Cpu,
+    Battery
 }
 
 public enum WidgetDisplayMode
@@ -83,6 +85,20 @@ public sealed class OptionItem<T>
     public string Label { get; }
 }
 
+public sealed class AppTarget
+{
+    public AppTarget(string processName, string label, string executablePath)
+    {
+        ProcessName = processName;
+        Label = label;
+        ExecutablePath = executablePath;
+    }
+
+    public string ProcessName { get; }
+    public string Label { get; }
+    public string ExecutablePath { get; }
+}
+
 public sealed class ScheduleRequest
 {
     public PowerAction Action { get; init; }
@@ -94,6 +110,10 @@ public sealed class ScheduleRequest
     public double NetworkThresholdBytesPerSecond { get; init; }
     public bool CpuConditionEnabled { get; init; }
     public double CpuThresholdPercent { get; init; }
+    public bool BatteryConditionEnabled { get; init; }
+    public double BatteryThresholdPercent { get; init; }
+    public string TargetProcessName { get; init; } = string.Empty;
+    public string TargetProcessLabel { get; init; } = string.Empty;
     public string DisplaySummary { get; init; } = string.Empty;
     public string ConditionsSummary { get; init; } = string.Empty;
 }
@@ -171,6 +191,7 @@ public sealed class ConditionEvaluationResult
     public string Message { get; init; } = string.Empty;
     public double CpuAverage { get; init; }
     public double NetworkAverageBytesPerSecond { get; init; }
+    public double BatteryPercent { get; init; }
 }
 
 public sealed class WidgetSettings

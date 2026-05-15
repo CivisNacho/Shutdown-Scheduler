@@ -12,11 +12,11 @@ public sealed class MainViewModel : ObservableObject
     private readonly IWidgetService _widget;
     private readonly LocalizationService _loc;
     private readonly IUserNotificationService _notifications;
+    private readonly BatteryMonitorService _battery;
 
     private OptionItem<PowerAction> _selectedAction;
     private OptionItem<ScheduleMode> _selectedScheduleMode;
     private OptionItem<ExecutionMode> _selectedExecutionMode;
-    private OptionItem<NetworkUnit> _selectedNetworkUnit;
     private OptionItem<WidgetDisplayMode> _selectedWidgetMode;
     private OptionItem<WidgetSizePreset> _selectedWidgetSizePreset;
     private OptionItem<WidgetAnchor> _selectedWidgetAnchor;
@@ -34,6 +34,8 @@ public sealed class MainViewModel : ObservableObject
     private string _networkThreshold = "500";
     private bool _cpuConditionEnabled;
     private string _cpuThreshold = "20";
+    private bool _batteryConditionEnabled;
+    private string _batteryThreshold = "20";
     private string _selectedHour = "00";
     private string _selectedMinute = "00";
     private string _activeSummary = string.Empty;
@@ -42,13 +44,21 @@ public sealed class MainViewModel : ObservableObject
     private bool _hasActiveSchedule;
     private bool _updatingTimeParts;
     private DateTime? _selectedTargetDateTime;
+    private string _selectedAppProcessName = string.Empty;
+    private string _selectedAppLabel = string.Empty;
 
-    public MainViewModel(SchedulingService scheduler, IWidgetService widget, LocalizationService loc, IUserNotificationService notifications)
+    public MainViewModel(
+        SchedulingService scheduler,
+        IWidgetService widget,
+        LocalizationService loc,
+        IUserNotificationService notifications,
+        BatteryMonitorService battery)
     {
         _scheduler = scheduler;
         _widget = widget;
         _loc = loc;
         _notifications = notifications;
+        _battery = battery;
 
         Actions = new(Enum.GetValues<PowerAction>().Select(action => new OptionItem<PowerAction>(action, loc.ActionLabel(action))));
         ScheduleModes = new(Enum.GetValues<ScheduleMode>().Select(mode => new OptionItem<ScheduleMode>(mode, loc.ScheduleModeLabel(mode))));
@@ -76,7 +86,6 @@ public sealed class MainViewModel : ObservableObject
         _selectedAction = Actions[0];
         _selectedScheduleMode = ScheduleModes[0];
         _selectedExecutionMode = ExecutionModes[0];
-        _selectedNetworkUnit = NetworkUnits[0];
         _selectedWidgetMode = WidgetModes.First(item => item.Value == widget.Settings.DisplayMode);
         _selectedWidgetSizePreset = WidgetSizePresets.FirstOrDefault(item => item.Value == widget.Settings.SizePreset) ?? WidgetSizePresets[1];
         _selectedWidgetAnchor = WidgetAnchors.FirstOrDefault(item => item.Value == widget.Settings.Anchor) ?? WidgetAnchors[0];
@@ -93,6 +102,9 @@ public sealed class MainViewModel : ObservableObject
         ApplyWidgetCommand = new RelayCommand(_ => ApplyWidget());
         AddNetworkConditionCommand = new RelayCommand(_ => AddCondition(ConditionType.Network), _ => !HasCondition(ConditionType.Network));
         AddCpuConditionCommand = new RelayCommand(_ => AddCondition(ConditionType.Cpu), _ => !HasCondition(ConditionType.Cpu));
+        AddBatteryConditionCommand = new RelayCommand(
+            _ => AddCondition(ConditionType.Battery),
+            _ => IsBatteryConditionAvailable && !HasCondition(ConditionType.Battery));
         RemoveConditionCommand = new RelayCommand(condition =>
         {
             if (condition is ConditionEditorItem item)
@@ -124,6 +136,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand ApplyWidgetCommand { get; }
     public ICommand AddNetworkConditionCommand { get; }
     public ICommand AddCpuConditionCommand { get; }
+    public ICommand AddBatteryConditionCommand { get; }
     public ICommand RemoveConditionCommand { get; }
 
     public string AppTitle => _loc.T("AppTitle");
@@ -165,15 +178,26 @@ public sealed class MainViewModel : ObservableObject
                 {
                     IsForcedAdmin = false;
                 }
+
                 OnPropertyChanged(nameof(IsForcedModeAvailable));
+                OnPropertyChanged(nameof(IsCloseAppAction));
             }
         }
     }
 
     public OptionItem<ScheduleMode> SelectedScheduleMode { get => _selectedScheduleMode; set => SetProperty(ref _selectedScheduleMode, value); }
     public OptionItem<ExecutionMode> SelectedExecutionMode { get => _selectedExecutionMode; set => SetProperty(ref _selectedExecutionMode, value); }
-    public OptionItem<NetworkUnit> SelectedNetworkUnit { get => _selectedNetworkUnit; set => SetProperty(ref _selectedNetworkUnit, value); }
-    public OptionItem<WidgetDisplayMode> SelectedWidgetMode { get => _selectedWidgetMode; set => SetProperty(ref _selectedWidgetMode, value); }
+    public OptionItem<WidgetDisplayMode> SelectedWidgetMode
+    {
+        get => _selectedWidgetMode;
+        set
+        {
+            if (SetProperty(ref _selectedWidgetMode, value))
+            {
+                ApplyWidget();
+            }
+        }
+    }
     public OptionItem<WidgetSizePreset> SelectedWidgetSizePreset
     {
         get => _selectedWidgetSizePreset;
@@ -208,6 +232,11 @@ public sealed class MainViewModel : ObservableObject
         get => _relativeMinutes;
         set
         {
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes))
+            {
+                value = Math.Max(1, minutes).ToString(CultureInfo.CurrentCulture);
+            }
+
             if (SetProperty(ref _relativeMinutes, value))
             {
                 ApplyRelativeMinutesToTarget();
@@ -292,8 +321,12 @@ public sealed class MainViewModel : ObservableObject
     public string NetworkThreshold { get => _networkThreshold; set => SetProperty(ref _networkThreshold, value); }
     public bool CpuConditionEnabled { get => _cpuConditionEnabled; set => SetProperty(ref _cpuConditionEnabled, value); }
     public string CpuThreshold { get => _cpuThreshold; set => SetProperty(ref _cpuThreshold, value); }
+    public bool BatteryConditionEnabled { get => _batteryConditionEnabled; set => SetProperty(ref _batteryConditionEnabled, value); }
+    public string BatteryThreshold { get => _batteryThreshold; set => SetProperty(ref _batteryThreshold, value); }
     public bool CanAddNetworkCondition => !HasCondition(ConditionType.Network);
     public bool CanAddCpuCondition => !HasCondition(ConditionType.Cpu);
+    public bool CanAddBatteryCondition => IsBatteryConditionAvailable && !HasCondition(ConditionType.Battery);
+    public bool IsBatteryConditionAvailable => _battery.IsBatteryAvailable;
     public bool HasConditions => Conditions.Count > 0;
     public bool HasNoConditions => !HasConditions;
     public bool WidgetEnabled { get => _widget.Settings.Enabled; set { _widget.Settings.Enabled = value; OnPropertyChanged(); ApplyWidget(); } }
@@ -303,6 +336,7 @@ public sealed class MainViewModel : ObservableObject
     public double WidgetWidth { get => _widget.Settings.Width; set { _widget.Settings.Width = value; OnPropertyChanged(); } }
     public double WidgetHeight { get => _widget.Settings.Height; set { _widget.Settings.Height = value; OnPropertyChanged(); } }
     public bool IsForcedModeAvailable => ActionExecutionService.SupportsForcedMode(SelectedAction.Value);
+    public bool IsCloseAppAction => SelectedAction.Value == PowerAction.CloseApp;
 
     public bool HasActiveSchedule
     {
@@ -342,6 +376,14 @@ public sealed class MainViewModel : ObservableObject
             return Fail(_loc.T("ValidationExactTime"), out request, out error);
         }
 
+        if (SelectedAction.Value == PowerAction.CloseApp)
+        {
+            if (string.IsNullOrWhiteSpace(_selectedAppProcessName))
+            {
+                return Fail(_loc.T("ValidationAppSelection"), out request, out error);
+            }
+        }
+
         if (target <= now) return Fail(_loc.T("ValidationFutureDateTime"), out request, out error);
         if (target > DateTime.Today.AddDays(7).AddHours(23).AddMinutes(59).AddSeconds(59))
         {
@@ -350,18 +392,58 @@ public sealed class MainViewModel : ObservableObject
 
         SyncConditionFlags();
 
-        if (NetworkConditionEnabled && (!double.TryParse(NetworkThreshold, out var networkThreshold) || networkThreshold < 0))
+        var networkCondition = Conditions.FirstOrDefault(condition => condition.Type == ConditionType.Network);
+        var cpuCondition = Conditions.FirstOrDefault(condition => condition.Type == ConditionType.Cpu);
+        var batteryCondition = Conditions.FirstOrDefault(condition => condition.Type == ConditionType.Battery);
+
+        if (NetworkConditionEnabled && networkCondition is not null)
+        {
+            NetworkThreshold = networkCondition.NetworkThreshold;
+        }
+
+        if (CpuConditionEnabled && cpuCondition is not null)
+        {
+            CpuThreshold = cpuCondition.CpuThreshold;
+        }
+
+        if (BatteryConditionEnabled && batteryCondition is not null)
+        {
+            BatteryThreshold = batteryCondition.BatteryThreshold;
+        }
+
+        if (NetworkConditionEnabled &&
+            (networkCondition is null || !double.TryParse(networkCondition.NetworkThreshold, out var networkThreshold) || networkThreshold < 0))
         {
             return Fail(_loc.T("ValidationNetworkThreshold"), out request, out error);
         }
 
-        if (CpuConditionEnabled && (!double.TryParse(CpuThreshold, out var cpuThreshold) || cpuThreshold < 0 || cpuThreshold > 100))
+        if (CpuConditionEnabled &&
+            (cpuCondition is null || !double.TryParse(cpuCondition.CpuThreshold, out var cpuThreshold) || cpuThreshold < 0 || cpuThreshold > 100))
         {
             return Fail(_loc.T("ValidationCpuThreshold"), out request, out error);
         }
 
+        if (BatteryConditionEnabled)
+        {
+            if (!IsBatteryConditionAvailable)
+            {
+                return Fail(_loc.T("ValidationBatteryUnavailable"), out request, out error);
+            }
+
+            if (batteryCondition is null ||
+                !double.TryParse(batteryCondition.BatteryThreshold, out var batteryThreshold) ||
+                batteryThreshold < 0 ||
+                batteryThreshold > 100)
+            {
+                return Fail(_loc.T("ValidationBatteryThreshold"), out request, out error);
+            }
+        }
+
         var thresholdBytes = NetworkConditionEnabled
-            ? double.Parse(NetworkThreshold) * (SelectedNetworkUnit.Value == NetworkUnit.Mbs ? 1024 * 1024 : 1024)
+            ? double.Parse(networkCondition!.NetworkThreshold) * (networkCondition.SelectedNetworkUnit.Value == NetworkUnit.Mbs ? 1024 * 1024 : 1024)
+            : 0;
+        var batteryThresholdPercent = BatteryConditionEnabled
+            ? double.Parse(batteryCondition!.BatteryThreshold)
             : 0;
 
         request = new ScheduleRequest
@@ -374,27 +456,47 @@ public sealed class MainViewModel : ObservableObject
             NetworkConditionEnabled = NetworkConditionEnabled,
             NetworkThresholdBytesPerSecond = thresholdBytes,
             CpuConditionEnabled = CpuConditionEnabled,
-            CpuThresholdPercent = CpuConditionEnabled ? double.Parse(CpuThreshold) : 0,
-            DisplaySummary = $"{_loc.ActionLabel(SelectedAction.Value)} at {target:G}",
-            ConditionsSummary = BuildConditionsSummary(thresholdBytes)
+            CpuThresholdPercent = CpuConditionEnabled ? double.Parse(cpuCondition!.CpuThreshold) : 0,
+            BatteryConditionEnabled = BatteryConditionEnabled,
+            BatteryThresholdPercent = batteryThresholdPercent,
+            TargetProcessName = _selectedAppProcessName,
+            TargetProcessLabel = _selectedAppLabel,
+            DisplaySummary = BuildDisplaySummary(target),
+            ConditionsSummary = BuildConditionsSummary(thresholdBytes, batteryThresholdPercent)
         };
 
         return true;
     }
 
-    private string BuildConditionsSummary(double thresholdBytes)
+    private string BuildConditionsSummary(double thresholdBytes, double batteryThresholdPercent)
     {
         var parts = new List<string>();
         if (NetworkConditionEnabled) parts.Add($"{_loc.T("NetworkShort")} < {ConditionEvaluationService.FormatBytes(thresholdBytes)}");
-        if (CpuConditionEnabled) parts.Add($"{_loc.T("CpuShort")} < {CpuThreshold}%");
+        if (CpuConditionEnabled) parts.Add($"{_loc.T("CpuShort")} < {Conditions.First(condition => condition.Type == ConditionType.Cpu).CpuThreshold}%");
+        if (BatteryConditionEnabled) parts.Add($"{_loc.T("BatteryShort")} < {batteryThresholdPercent:0.0}%");
         return parts.Count == 0 ? _loc.T("NoConditions") : string.Join(" AND ", parts);
+    }
+
+    private string BuildDisplaySummary(DateTime target)
+    {
+        if (SelectedAction.Value == PowerAction.CloseApp && !string.IsNullOrWhiteSpace(_selectedAppLabel))
+        {
+            return $"{_loc.ActionLabel(SelectedAction.Value)}: {_selectedAppLabel} at {target:G}";
+        }
+
+        return $"{_loc.ActionLabel(SelectedAction.Value)} at {target:G}";
     }
 
     private void AddCondition(ConditionType type)
     {
+        if (type == ConditionType.Battery && !IsBatteryConditionAvailable)
+        {
+            return;
+        }
+
         if (HasCondition(type)) return;
 
-        Conditions.Add(new ConditionEditorItem(type, GetConditionLabel(type)));
+        Conditions.Add(new ConditionEditorItem(type, GetConditionLabel(type), _loc, NetworkUnits));
         SyncConditionFlags();
         RefreshConditionState();
     }
@@ -409,22 +511,32 @@ public sealed class MainViewModel : ObservableObject
     private bool HasCondition(ConditionType type) => Conditions.Any(condition => condition.Type == type);
 
     private string GetConditionLabel(ConditionType type)
-        => type == ConditionType.Network ? _loc.T("NetworkBelow") : _loc.T("CpuBelow");
+        => type switch
+        {
+            ConditionType.Network => _loc.T("NetworkBelow"),
+            ConditionType.Cpu => _loc.T("CpuBelow"),
+            ConditionType.Battery => _loc.T("BatteryBelow"),
+            _ => _loc.T("AddCondition")
+        };
 
     private void SyncConditionFlags()
     {
         NetworkConditionEnabled = HasCondition(ConditionType.Network);
         CpuConditionEnabled = HasCondition(ConditionType.Cpu);
+        BatteryConditionEnabled = HasCondition(ConditionType.Battery);
     }
 
     private void RefreshConditionState()
     {
         OnPropertyChanged(nameof(CanAddNetworkCondition));
         OnPropertyChanged(nameof(CanAddCpuCondition));
+        OnPropertyChanged(nameof(CanAddBatteryCondition));
+        OnPropertyChanged(nameof(IsBatteryConditionAvailable));
         OnPropertyChanged(nameof(HasConditions));
         OnPropertyChanged(nameof(HasNoConditions));
         (AddNetworkConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddCpuConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddBatteryConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     private static bool Fail(string message, out ScheduleRequest request, out string error)
@@ -440,7 +552,6 @@ public sealed class MainViewModel : ObservableObject
         _widget.Settings.SizePreset = SelectedWidgetSizePreset.Value;
         _widget.Settings.Anchor = SelectedWidgetAnchor.Value;
         _widget.ApplySettings();
-        _widget.Update(_scheduler.ActiveSchedule);
     }
 
     private string FormatDayOffset(int offset)
@@ -449,12 +560,20 @@ public sealed class MainViewModel : ObservableObject
         return string.Format(_loc.T(offset == 1 ? "DayOffset" : "DayOffsetPlural"), offset);
     }
 
+    public void SetSelectedAppTarget(AppTarget? target)
+    {
+        _selectedAppProcessName = target?.ProcessName ?? string.Empty;
+        _selectedAppLabel = target?.Label ?? string.Empty;
+    }
+
     private void ApplyRelativeMinutesToTarget()
     {
-        if (!double.TryParse(RelativeMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes) || minutes <= 0)
+        if (!double.TryParse(RelativeMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes))
         {
             return;
         }
+
+        minutes = Math.Max(1, minutes);
 
         var target = DateTime.Now.AddMinutes(minutes);
         if (target > MaximumTargetDateTime) return;
@@ -496,7 +615,6 @@ public sealed class MainViewModel : ObservableObject
             ActiveSummary = _loc.T("NoActiveSchedule");
             StatusSummary = string.Empty;
             Remaining = "--:--:--";
-            _widget.Update(null);
             return;
         }
 
@@ -505,20 +623,46 @@ public sealed class MainViewModel : ObservableObject
         Remaining = RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
         ActiveSummary = $"{active.Request.DisplaySummary}\n{_loc.T("Mode")}: {_loc.ExecutionModeLabel(active.Request.ExecutionMode)}\n{_loc.T("Conditions")}: {active.Request.ConditionsSummary}";
         StatusSummary = $"{_loc.T("Status")}: {_loc.StatusLabel(active.Status)}\n{_loc.T("Remaining")}: {Remaining}\n{active.StatusDetails}";
-        _widget.Update(active);
     }
 }
 
-public sealed class ConditionEditorItem
+public sealed class ConditionEditorItem : ObservableObject
 {
-    public ConditionEditorItem(ConditionType type, string label)
+    private string _networkThreshold = "500";
+    private string _cpuThreshold = "20";
+    private string _batteryThreshold = "20";
+    private OptionItem<NetworkUnit> _selectedNetworkUnit;
+
+    public ConditionEditorItem(
+        ConditionType type,
+        string label,
+        LocalizationService loc,
+        IEnumerable<OptionItem<NetworkUnit>> networkUnits)
     {
         Type = type;
         Label = label;
+        RequiredBelowLabel = loc.T("RequiredBelow");
+        NetworkShortLabel = loc.T("NetworkShort");
+        CpuShortLabel = loc.T("CpuShort");
+        BatteryShortLabel = loc.T("BatteryShort");
+        RemoveConditionLabel = loc.T("RemoveCondition");
+        NetworkUnits = new ObservableCollection<OptionItem<NetworkUnit>>(networkUnits);
+        _selectedNetworkUnit = NetworkUnits[0];
     }
 
     public ConditionType Type { get; }
     public string Label { get; }
+    public string RequiredBelowLabel { get; }
+    public string NetworkShortLabel { get; }
+    public string CpuShortLabel { get; }
+    public string BatteryShortLabel { get; }
+    public string RemoveConditionLabel { get; }
+    public ObservableCollection<OptionItem<NetworkUnit>> NetworkUnits { get; }
+    public OptionItem<NetworkUnit> SelectedNetworkUnit { get => _selectedNetworkUnit; set => SetProperty(ref _selectedNetworkUnit, value); }
+    public string NetworkThreshold { get => _networkThreshold; set => SetProperty(ref _networkThreshold, value); }
+    public string CpuThreshold { get => _cpuThreshold; set => SetProperty(ref _cpuThreshold, value); }
+    public string BatteryThreshold { get => _batteryThreshold; set => SetProperty(ref _batteryThreshold, value); }
     public bool IsNetwork => Type == ConditionType.Network;
     public bool IsCpu => Type == ConditionType.Cpu;
+    public bool IsBattery => Type == ConditionType.Battery;
 }

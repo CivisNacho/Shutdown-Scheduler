@@ -1,0 +1,57 @@
+# One executable name per line.
+# Lines starting with # are comments.
+# Write only the executable file name, including .exe.
+# Examples:
+# updater.exe
+# driverhelper.exe
+# graphicscontrolpanel.exe
+# GoogleUpdate.exe
+# BraveUpdate.exe
+# SDXHelper.exe
+# igfxTray.exe
+# RadeonSoftware.exe
+# pwsh.exe
+
+AMDSoftware.exe
+AMDRSServ.exe
+ArcControl.exe
+ArcControlAssist.exe
+atieclxx.exe
+atiesrxx.exe
+BraveUpdate.exe
+cncmd.exe
+GoogleUpdate.exe
+igfxCUIServiceN.exe
+igfxEM.exe
+igfxHK.exe
+igfxTray.exe
+IntelCpHDCPSvc.exe
+IntelGraphicsSoftware.exe
+msedgewebview2.exe
+ServiceHub.Host.CLR.x64.exe
+ServiceHub.Host.CLR.x86.exe
+ServiceHub.Host.DotNet.x64.exe
+ServiceHub.Host.DotNet.x86.exe
+ServiceHub.IdentityHost.exe
+ServiceHub.IndexingService.exe
+ServiceHub.SettingsHost.exe
+ServiceHub.TestWindowStoreHost.exe
+pwsh.exe
+RadeonSoftware.exe
+SDXHelper.exe
+vcpkgsrv.exe
+vgtray.exe
+VsDebugConsole.exe
+VsGraphicsDesktopEngine.exe
+VSIXAutoUpdate.exe
+VSIXConfigurationUpdater.exe
+vsnipp.exe
+MSBuild.exe
+PerfWatson2.exe
+DevHub.exe
+QtWebEngineProcess.exe
+ServiceHub.IntellicodeModelService.exe
+steamwebhelper.exe
+WidgetService.exe
+DevHub.exe
+PerfWatson2.exe

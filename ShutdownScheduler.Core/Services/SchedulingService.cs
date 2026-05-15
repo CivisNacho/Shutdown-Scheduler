@@ -99,7 +99,7 @@ public sealed class SchedulingService
         ActiveSchedule.Status = ScheduleStatus.Executing;
         try
         {
-            await _executor.ExecuteAsync(ActiveSchedule.Request.Action, ActiveSchedule.Request.ExecutionMode);
+            await _executor.ExecuteAsync(ActiveSchedule.Request);
         }
         catch (Exception ex)
         {

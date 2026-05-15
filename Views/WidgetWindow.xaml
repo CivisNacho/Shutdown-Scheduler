@@ -15,9 +15,8 @@
             BorderThickness="1">
             <Grid ColumnSpacing="12" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -26,9 +25,29 @@
 
                 <Border
                     Grid.RowSpan="2"
-                    Width="4"
+                    Width="16"
                     CornerRadius="2"
-                    Background="{ThemeResource WidgetAccentBrush}" />
+                    Background="{ThemeResource WidgetAccentBrush}">
+                    <StackPanel
+                        x:Name="ConditionIconsPanel"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical"
+                        Spacing="2">
+                        <TextBlock
+                            x:Name="ConditionIconPrimaryText"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="10"
+                            HorizontalAlignment="Center"
+                            Foreground="White" />
+                        <TextBlock
+                            x:Name="ConditionIconSecondaryText"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="10"
+                            HorizontalAlignment="Center"
+                            Foreground="White" />
+                    </StackPanel>
+                </Border>
 
                 <TextBlock
                     x:Name="ActionText"
@@ -45,7 +64,7 @@
                     x:Name="TimeText"
                     Grid.Row="1"
                     Grid.Column="1"
-                    FontFamily="{ThemeResource EditorialDisplayFontFamily}"
+                    FontFamily="Consolas"
                     FontStyle="Italic"
                     FontSize="28"
                     FontWeight="SemiBold"
@@ -54,28 +73,6 @@
                     TextWrapping="NoWrap"
                     Foreground="{ThemeResource HeroValueBrush}"
                     TextTrimming="CharacterEllipsis" />
-
-                <Border
-                    Grid.Column="2"
-                    Grid.RowSpan="2"
-                    MinWidth="72"
-                    Padding="10,4"
-                    CornerRadius="6"
-                    Background="{ThemeResource WidgetBadgeBrush}"
-                    BorderBrush="{ThemeResource GlassPanelBorderBrush}"
-                    BorderThickness="1"
-                    VerticalAlignment="Center">
-                    <TextBlock
-                        x:Name="ContextText"
-                        FontSize="11"
-                        FontWeight="SemiBold"
-                        MaxLines="1"
-                        TextWrapping="NoWrap"
-                        TextTrimming="CharacterEllipsis"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource HeroCaptionBrush}" />
-                </Border>
             </Grid>
         </Border>
     </Grid>
