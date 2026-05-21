@@ -5,18 +5,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Title="Shutdown Scheduler">
+    mc:Ignorable="d">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
+    <Grid
+        x:Name="Root"
+        Padding="12"
+        RowSpacing="8"
+        Background="{ThemeResource AppChromeBackgroundBrush}"
+        UseSystemFocusVisuals="True">
         <Grid
-            x:Name="Root"
-            Padding="12"
-            RowSpacing="8"
-            Background="{ThemeResource AppChromeBackgroundBrush}">
+            x:Name="DesignSurface"
+            Background="{ThemeResource AppChromeBackgroundBrush}"
+            UseSystemFocusVisuals="True">
         <Grid.Resources>
             <DataTemplate x:Key="AppTargetTemplate">
                 <Grid ColumnSpacing="10" MinHeight="28">
@@ -169,7 +173,7 @@
 
                 <StackPanel Spacing="6">
                     <TextBlock
-                        Text="SHUTDOWN SCHEDULER"
+                        Text="{Binding AppTitle}"
                         Style="{StaticResource InlineLabelTextStyle}"
                         Foreground="{ThemeResource HeroEyebrowBrush}" />
                     <Grid ColumnSpacing="14" VerticalAlignment="Center">
@@ -209,15 +213,25 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Button
+                        x:Name="ScheduleButton"
                         Content="{Binding ScheduleButtonLabel}"
                         Command="{Binding ScheduleCommand}"
+                        AccessKey="S"
+                        TabIndex="10"
+                        AutomationProperties.Name="{Binding ScheduleButtonLabel}"
+                        AutomationProperties.HelpText="Create or replace the current schedule."
                         MinWidth="136"
                         Style="{ThemeResource GlassPrimaryButtonStyle}" />
                     <Button
+                        x:Name="CancelScheduleButton"
                         Grid.Column="1"
                         Content="{Binding CancelButtonLabel}"
                         Command="{Binding CancelCommand}"
                         IsEnabled="{Binding HasActiveSchedule}"
+                        AccessKey="C"
+                        TabIndex="11"
+                        AutomationProperties.Name="{Binding CancelButtonLabel}"
+                        AutomationProperties.HelpText="Cancel the active schedule."
                         MinWidth="100"
                         Style="{ThemeResource GlassSecondaryButtonStyle}" />
                 </Grid>
@@ -272,6 +286,8 @@
                                 ItemsSource="{Binding Actions}"
                                 DisplayMemberPath="Label"
                                 SelectedItem="{Binding SelectedAction, Mode=TwoWay}"
+                                TabIndex="20"
+                                AutomationProperties.Name="{Binding ActionLabel}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top" />
 
@@ -287,6 +303,8 @@
                                     <CheckBox
                                         Content="{Binding ForceAdminLabel}"
                                         IsChecked="{Binding IsForcedAdmin, Mode=TwoWay}"
+                                        TabIndex="21"
+                                        AutomationProperties.Name="{Binding ForceAdminLabel}"
                                         VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
@@ -314,6 +332,10 @@
                                             Grid.Column="1"
                                             Content="{Binding RefreshAppsLabel}"
                                             Click="OnRefreshCloseAppTargetsClick"
+                                            AccessKey="R"
+                                            TabIndex="22"
+                                            AutomationProperties.Name="{Binding RefreshAppsLabel}"
+                                            AutomationProperties.HelpText="Refresh the list of running apps."
                                             Style="{ThemeResource GlassSecondaryButtonStyle}" />
                                     </Grid>
                                     <ComboBox
@@ -322,6 +344,9 @@
                                         ItemTemplate="{StaticResource AppTargetTemplate}"
                                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                                         PlaceholderText="{Binding NoAppsFoundLabel}"
+                                        TabIndex="23"
+                                        AutomationProperties.Name="{Binding AppToCloseLabel}"
+                                        AutomationProperties.HelpText="Choose the running app that will be closed."
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Top" />
                                     <Grid Grid.Row="2" ColumnSpacing="8">
@@ -361,12 +386,14 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="DATE" Style="{StaticResource InlineLabelTextStyle}" />
+                                    <TextBlock Grid.Row="0" Text="{Binding DateLabel}" Style="{StaticResource InlineLabelTextStyle}" />
                                     <CalendarDatePicker
                                         x:Name="TargetDatePicker"
                                         Grid.Row="1"
-                                        PlaceholderText="Pick a date"
+                                        PlaceholderText="{Binding PickDatePlaceholder}"
                                         DateChanged="OnTargetDateChanged"
+                                        TabIndex="24"
+                                        AutomationProperties.Name="{Binding DateLabel}"
                                         MinHeight="40"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Top" />
@@ -378,6 +405,8 @@
                                         x:Name="TargetTimePicker"
                                         Grid.Row="3"
                                         TimeChanged="OnTargetTimeChanged"
+                                        TabIndex="25"
+                                        AutomationProperties.Name="{Binding TargetTimeLabel}"
                                         MinHeight="40"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Top" />
@@ -402,6 +431,8 @@
                                         Minimum="1"
                                         Value="15"
                                         SpinButtonPlacementMode="Inline"
+                                        TabIndex="26"
+                                        AutomationProperties.Name="{Binding MinutesFromNowLabel}"
                                         SmallChange="1"
                                         LargeChange="60"
                                         ValidationMode="InvalidInputOverwritten"
@@ -433,6 +464,9 @@
                                 MinWidth="144"
                                 HorizontalAlignment="Left"
                                 Click="OnAddConditionClick"
+                                AccessKey="A"
+                                TabIndex="30"
+                                AutomationProperties.Name="{Binding AddConditionLabel}"
                                 Style="{ThemeResource GlassSecondaryButtonStyle}" />
                         </Grid>
 
@@ -480,6 +514,8 @@
                                                     Grid.Column="1"
                                                     Content="{Binding RemoveConditionLabel}"
                                                     Click="OnRemoveConditionClick"
+                                                    TabIndex="31"
+                                                    AutomationProperties.Name="{Binding RemoveConditionLabel}"
                                                     Style="{ThemeResource GlassSecondaryButtonStyle}" />
                                             </Grid>
 
@@ -574,6 +610,8 @@
                                     IsOn="{Binding WidgetEnabled, Mode=TwoWay}"
                                     OffContent=""
                                     OnContent=""
+                                    TabIndex="40"
+                                    AutomationProperties.Name="{Binding Loc[EnableWidget]}"
                                     Style="{ThemeResource FormToggleSwitchStyle}" />
                             </Grid>
                         </Border>
@@ -591,6 +629,8 @@
                                     IsOn="{Binding WidgetShowOnAllScreens, Mode=TwoWay}"
                                     OffContent=""
                                     OnContent=""
+                                    TabIndex="41"
+                                    AutomationProperties.Name="{Binding ShowOnAllScreensLabel}"
                                     Style="{ThemeResource FormToggleSwitchStyle}" />
                             </Grid>
                         </Border>
@@ -601,6 +641,8 @@
                             ItemsSource="{Binding WidgetModes}"
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetMode, Mode=TwoWay}"
+                            TabIndex="42"
+                            AutomationProperties.Name="{Binding Loc[WidgetMode]}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top" />
                         <ComboBox
@@ -609,6 +651,8 @@
                             ItemsSource="{Binding WidgetSizePresets}"
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetSizePreset, Mode=TwoWay}"
+                            TabIndex="43"
+                            AutomationProperties.Name="{Binding WidgetSizeLabel}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top" />
                         <ComboBox
@@ -617,10 +661,18 @@
                             ItemsSource="{Binding WidgetAnchors}"
                             DisplayMemberPath="Label"
                             SelectedItem="{Binding SelectedWidgetAnchor, Mode=TwoWay}"
+                            TabIndex="44"
+                            AutomationProperties.Name="{Binding WidgetPositionLabel}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top" />
                     </Grid>
                 </Border>
+        </Grid>
+
+        <TextBlock
+            x:Name="AccessibilityStatusText"
+            Visibility="Collapsed"
+            AutomationProperties.LiveSetting="Polite" />
         </Grid>
     </Grid>
 </Window>

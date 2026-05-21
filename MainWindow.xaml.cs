@@ -19,14 +19,17 @@ using Windows.Graphics;
 using Windows.UI;
 using WinRT.Interop;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Automation;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.ComponentModel;
 
 namespace Shutdown_Scheduler_WinUI
 {
     public sealed partial class MainWindow : Window
     {
-        private const int FixedWindowWidth = 1600;
-        private const int FixedWindowHeight = 760;
+        private const int DesignWindowWidth = 1440;
+        private const int DesignWindowHeight = 680;
+        private const int WindowChromePadding = 24;
         private readonly SchedulingService _scheduler;
         private readonly LocalizationService _loc;
         private readonly AppSession _session;
@@ -40,6 +43,9 @@ namespace Shutdown_Scheduler_WinUI
         private nint _largeWindowIcon;
         private bool _syncingPickerValues;
         private bool _hasWarmedCloseAppPicker;
+        private bool _lastKnownHasActiveSchedule;
+        private int _windowWidth = DesignWindowWidth;
+        private int _windowHeight = DesignWindowHeight;
         private CancellationTokenSource? _closeAppPickerCts;
         private AppWindow? _appWindow;
 
@@ -62,8 +68,10 @@ namespace Shutdown_Scheduler_WinUI
             InitializeComponent();
             ConfigureWindowSize();
             Root.DataContext = ViewModel;
+            Title = string.Empty;
             CloseAppPickerPanel.DataContext = _closeAppPicker;
             _closeAppPicker.SelectedItemChanged += OnCloseAppPickerSelectionChanged;
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
             Root.Loaded += OnLoaded;
             Root.ActualThemeChanged += OnRootActualThemeChanged;
             _scheduler.WarningDue += OnWarningDue;
@@ -77,11 +85,30 @@ namespace Shutdown_Scheduler_WinUI
         {
             SyncPickersFromViewModel();
             ApplyTitleBarTheme();
+            _lastKnownHasActiveSchedule = ViewModel.HasActiveSchedule;
             if (!_hasWarmedCloseAppPicker)
             {
                 _hasWarmedCloseAppPicker = true;
                 _ = RefreshCloseAppTargetsAsync();
             }
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(MainViewModel.HasActiveSchedule))
+            {
+                return;
+            }
+
+            if (ViewModel.HasActiveSchedule == _lastKnownHasActiveSchedule)
+            {
+                return;
+            }
+
+            _lastKnownHasActiveSchedule = ViewModel.HasActiveSchedule;
+            AnnounceForAccessibility(ViewModel.HasActiveSchedule
+                ? "Schedule active."
+                : "Schedule canceled.");
         }
 
         private void ConfigureWindowSize()
@@ -90,7 +117,7 @@ namespace Shutdown_Scheduler_WinUI
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_windowHandle);
             _appWindow = AppWindow.GetFromWindowId(windowId);
             _appWindow.Closing += OnAppWindowClosing;
-            _appWindow.Resize(new SizeInt32(FixedWindowWidth, FixedWindowHeight));
+            ApplyResponsiveWindowBounds(windowId);
             ApplyWindowIcon();
 
             if (_appWindow.Presenter is OverlappedPresenter presenter)
@@ -103,9 +130,32 @@ namespace Shutdown_Scheduler_WinUI
             NativeMethods.SetWindowSubclass(_windowHandle, _subclassProc, 1, 0);
         }
 
+        private void ApplyResponsiveWindowBounds(Microsoft.UI.WindowId windowId)
+        {
+            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+            var workArea = displayArea.WorkArea;
+
+            var availableWidth = Math.Max(1, workArea.Width - WindowChromePadding);
+            var availableHeight = Math.Max(1, workArea.Height - WindowChromePadding);
+            var scale = Math.Min(
+                1.0,
+                Math.Min(
+                    (double)availableWidth / DesignWindowWidth,
+                    (double)availableHeight / DesignWindowHeight));
+
+            _windowWidth = Math.Max(1, (int)Math.Round(DesignWindowWidth * scale));
+            _windowHeight = Math.Max(1, (int)Math.Round(DesignWindowHeight * scale));
+
+            var x = workArea.X + Math.Max(0, (workArea.Width - _windowWidth) / 2);
+            var y = workArea.Y + Math.Max(0, (workArea.Height - _windowHeight) / 2);
+
+            _appWindow?.MoveAndResize(new RectInt32(x, y, _windowWidth, _windowHeight));
+        }
+
         private void OnClosed(object sender, WindowEventArgs args)
         {
             _closeAppPicker.SelectedItemChanged -= OnCloseAppPickerSelectionChanged;
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             Root.ActualThemeChanged -= OnRootActualThemeChanged;
             _scheduler.WarningDue -= OnWarningDue;
             _scheduler.Error -= OnSchedulerError;
@@ -156,12 +206,25 @@ namespace Shutdown_Scheduler_WinUI
             }
 
             var titleBar = _appWindow.TitleBar;
-            var bg = ResolveThemeColor("AppChromeBackgroundBrush", Color.FromArgb(255, 11, 11, 12));
-            var fg = ResolveThemeColor("HeroValueBrush", Colors.White);
-            var muted = ResolveThemeColor("MutedTextBrush", Color.FromArgb(255, 139, 134, 126));
-            var hover = ResolveThemeColor("GlassPanelSecondaryBackgroundBrush", Color.FromArgb(255, 24, 25, 28));
-            var pressed = ResolveThemeColor("GlassPanelStrongBorderBrush", Color.FromArgb(255, 90, 100, 112));
+            var isLightTheme = Root.ActualTheme == ElementTheme.Light;
 
+            var bg = ResolveThemeColor(
+                "AppChromeBackgroundBrush",
+                isLightTheme ? Color.FromArgb(255, 244, 241, 235) : Color.FromArgb(255, 11, 11, 12));
+            var fg = ResolveThemeColor(
+                "HeroValueBrush",
+                isLightTheme ? Color.FromArgb(255, 29, 31, 34) : Colors.White);
+            var muted = ResolveThemeColor(
+                "MutedTextBrush",
+                isLightTheme ? Color.FromArgb(255, 117, 109, 100) : Color.FromArgb(255, 139, 134, 126));
+            var hover = ResolveThemeColor(
+                "GlassPanelSecondaryBackgroundBrush",
+                isLightTheme ? Color.FromArgb(255, 249, 246, 240) : Color.FromArgb(255, 24, 25, 28));
+            var pressed = ResolveThemeColor(
+                "GlassPanelStrongBorderBrush",
+                isLightTheme ? Color.FromArgb(255, 130, 144, 161) : Color.FromArgb(255, 90, 100, 112));
+
+            titleBar.IconShowOptions = IconShowOptions.HideIconAndSystemMenu;
             titleBar.BackgroundColor = bg;
             titleBar.ForegroundColor = fg;
             titleBar.InactiveBackgroundColor = bg;
@@ -232,10 +295,10 @@ namespace Shutdown_Scheduler_WinUI
             if (message == NativeMethods.WmGetMinMaxInfo)
             {
                 var minMaxInfo = Marshal.PtrToStructure<NativeMethods.MinMaxInfo>(lParam);
-                minMaxInfo.MinTrackSize.X = FixedWindowWidth;
-                minMaxInfo.MinTrackSize.Y = FixedWindowHeight;
-                minMaxInfo.MaxTrackSize.X = FixedWindowWidth;
-                minMaxInfo.MaxTrackSize.Y = FixedWindowHeight;
+                minMaxInfo.MinTrackSize.X = _windowWidth;
+                minMaxInfo.MinTrackSize.Y = _windowHeight;
+                minMaxInfo.MaxTrackSize.X = _windowWidth;
+                minMaxInfo.MaxTrackSize.Y = _windowHeight;
                 Marshal.StructureToPtr(minMaxInfo, lParam, false);
                 return 0;
             }
@@ -287,8 +350,10 @@ namespace Shutdown_Scheduler_WinUI
                     Content = optionsPanel
                 },
                 CloseButtonText = _loc.T("CancelButton"),
+                DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Root.XamlRoot
             };
+            AutomationProperties.SetName(dialog, ViewModel.AddConditionDialogTitle);
             ApplyDialogColors(dialog);
 
             AddConditionOption(
@@ -323,6 +388,7 @@ namespace Shutdown_Scheduler_WinUI
                     Padding = new Thickness(16, 10, 16, 10),
                     IsEnabled = isEnabled()
                 };
+                AutomationProperties.SetName(button, label);
                 ApplyDialogButtonColors(button);
 
                 button.Click += (_, _) =>
@@ -397,9 +463,11 @@ namespace Shutdown_Scheduler_WinUI
                 {
                     Title = _loc.T("WarningTitle"),
                     Content = message,
-                    CloseButtonText = "OK",
+                    CloseButtonText = _loc.T("Ok"),
+                    DefaultButton = ContentDialogButton.Close,
                     XamlRoot = Root.XamlRoot
                 };
+                AutomationProperties.SetName(dialog, _loc.T("WarningTitle"));
                 ApplyDialogColors(dialog);
 
                 await dialog.ShowAsync();
@@ -417,10 +485,11 @@ namespace Shutdown_Scheduler_WinUI
                     Content = string.Format(_loc.T("WarningText"), _loc.ActionLabel(schedule.Request.Action), remaining),
                     PrimaryButtonText = _loc.T("Postpone"),
                     SecondaryButtonText = _loc.T("CancelButton"),
-                    CloseButtonText = "OK",
+                    CloseButtonText = _loc.T("Ok"),
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = Root.XamlRoot
                 };
+                AutomationProperties.SetName(dialog, _loc.T("WarningTitle"));
                 ApplyDialogColors(dialog);
 
                 var result = await dialog.ShowAsync();
@@ -513,6 +582,7 @@ namespace Shutdown_Scheduler_WinUI
                     ?? pickerItems.FirstOrDefault();
 
                 _ = WarmIconsAsync(pickerItems, cancellationToken);
+                AnnounceForAccessibility($"Found {pickerItems.Count} running apps.");
             }
             catch (OperationCanceledException)
             {
@@ -618,6 +688,11 @@ namespace Shutdown_Scheduler_WinUI
             }
 
             return null;
+        }
+
+        private void AnnounceForAccessibility(string message)
+        {
+            AccessibilityStatusText.Text = $"{message} {DateTime.Now:HH:mm:ss}";
         }
 
         private static partial class NativeMethods
