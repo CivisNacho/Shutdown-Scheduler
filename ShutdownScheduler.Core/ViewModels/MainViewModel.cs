@@ -159,6 +159,8 @@ public sealed class MainViewModel : ObservableObject
     public string DayLabel => _loc.T("Day");
     public string TargetTimeLabel => _loc.T("TargetTime");
     public string MinutesFromNowLabel => _loc.T("MinutesFromNow");
+    public string DateLabel => _loc.T("Date");
+    public string PickDatePlaceholder => _loc.T("PickDate");
     public string ShowOnAllScreensLabel => _loc.T("ShowOnAllScreens");
     public string WidgetSizeLabel => _loc.T("WidgetSize");
     public string WidgetPositionLabel => _loc.T("WidgetPosition");
@@ -474,17 +476,17 @@ public sealed class MainViewModel : ObservableObject
         if (NetworkConditionEnabled) parts.Add($"{_loc.T("NetworkShort")} < {ConditionEvaluationService.FormatBytes(thresholdBytes)}");
         if (CpuConditionEnabled) parts.Add($"{_loc.T("CpuShort")} < {Conditions.First(condition => condition.Type == ConditionType.Cpu).CpuThreshold}%");
         if (BatteryConditionEnabled) parts.Add($"{_loc.T("BatteryShort")} < {batteryThresholdPercent:0.0}%");
-        return parts.Count == 0 ? _loc.T("NoConditions") : string.Join(" AND ", parts);
+        return parts.Count == 0 ? _loc.T("NoConditions") : string.Join($" {_loc.T("And")} ", parts);
     }
 
     private string BuildDisplaySummary(DateTime target)
     {
         if (SelectedAction.Value == PowerAction.CloseApp && !string.IsNullOrWhiteSpace(_selectedAppLabel))
         {
-            return $"{_loc.ActionLabel(SelectedAction.Value)}: {_selectedAppLabel} at {target:G}";
+            return $"{_loc.ActionLabel(SelectedAction.Value)}: {_selectedAppLabel} {_loc.T("At")} {target:G}";
         }
 
-        return $"{_loc.ActionLabel(SelectedAction.Value)} at {target:G}";
+        return $"{_loc.ActionLabel(SelectedAction.Value)} {_loc.T("At")} {target:G}";
     }
 
     private void AddCondition(ConditionType type)

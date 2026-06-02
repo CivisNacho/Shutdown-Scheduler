@@ -22,6 +22,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Automation;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.ComponentModel;
+using Windows.Globalization.DateTimeFormatting;
 
 namespace Shutdown_Scheduler_WinUI
 {
@@ -83,6 +84,7 @@ namespace Shutdown_Scheduler_WinUI
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            ApplyLocalDateFormat();
             SyncPickersFromViewModel();
             ApplyTitleBarTheme();
             _lastKnownHasActiveSchedule = ViewModel.HasActiveSchedule;
@@ -309,6 +311,11 @@ namespace Shutdown_Scheduler_WinUI
         private void OnTargetDateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
         {
             SyncViewModelFromPickers();
+        }
+
+        private void ApplyLocalDateFormat()
+        {
+            TargetDatePicker.DateFormat = DateTimeFormatter.ShortDate.Template;
         }
 
         private void OnRelativeMinutesValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)

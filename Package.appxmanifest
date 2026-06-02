@@ -5,19 +5,18 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
-  IgnorableNamespaces="uap rescap systemai">
+  IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="238bc0a3-4141-4152-8206-5b668bfe74e5"
-    Publisher="CN=Nacho"
-    Version="1.0.0.0" />
+    Name="NachoGarcaGmez.ShutdownScheduler"
+    Publisher="CN=DA0ED678-FA79-4B56-A0A1-FF73C9058BEB"
+    Version="1.0.3.0" />
 
-  <mp:PhoneIdentity PhoneProductId="238bc0a3-4141-4152-8206-5b668bfe74e5" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="a2d357cf-8aa1-42f3-9834-59a90f0b8d2c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Shutdown Scheduler WinUI</DisplayName>
-    <PublisherDisplayName>Nacho</PublisherDisplayName>
+    <DisplayName>Shutdown Scheduler</DisplayName>
+    <PublisherDisplayName>Nacho García Gómez</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -35,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Shutdown Scheduler WinUI"
-        Description="Shutdown Scheduler WinUI"
+        DisplayName="Shutdown Scheduler"
+        Description="Shutdown Scheduler"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -48,6 +47,5 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <systemai:Capability Name="systemAIModels"/>
   </Capabilities>
 </Package>

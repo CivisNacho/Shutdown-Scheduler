@@ -8,9 +8,19 @@ public sealed class LocalizationService
     private readonly Dictionary<string, string> _strings;
 
     public LocalizationService()
+        : this(null)
     {
-        var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-        _strings = culture.Equals("es", StringComparison.OrdinalIgnoreCase) ? Spanish : English;
+    }
+
+    public LocalizationService(CultureInfo? culture)
+    {
+        culture ??= ResolveCulture();
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
+        _strings = culture.TwoLetterISOLanguageName.Equals("es", StringComparison.OrdinalIgnoreCase) ? Spanish : English;
     }
 
     public string this[string key] => _strings.TryGetValue(key, out var value) ? value : English.GetValueOrDefault(key, key);
@@ -21,6 +31,33 @@ public sealed class LocalizationService
     public string ExecutionModeLabel(ExecutionMode mode) => T($"ExecutionMode_{mode}");
     public string StatusLabel(ScheduleStatus status) => T($"Status_{status}");
     public string WeekdayLabel(DayOfWeek day) => T($"Day_{day}");
+
+    private static CultureInfo ResolveCulture()
+    {
+        var preferredCultures = new[]
+        {
+            CultureInfo.CurrentUICulture,
+            CultureInfo.InstalledUICulture,
+            CultureInfo.CurrentCulture
+        };
+
+        foreach (var culture in preferredCultures)
+        {
+            if (IsSupportedCulture(culture))
+            {
+                return culture;
+            }
+        }
+
+        return CultureInfo.GetCultureInfo("en-US");
+    }
+
+    private static bool IsSupportedCulture(CultureInfo culture)
+    {
+        var languageTag = culture.TwoLetterISOLanguageName;
+        return languageTag.Equals("es", StringComparison.OrdinalIgnoreCase) ||
+               languageTag.Equals("en", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static readonly Dictionary<string, string> English = new()
     {
@@ -98,6 +135,8 @@ public sealed class LocalizationService
         ["NoAppsFound"] = "No running apps found.",
         ["LoadingApps"] = "Loading running apps...",
         ["ConditionsHint"] = "Checkbox for every option to enable them",
+        ["Date"] = "Date",
+        ["PickDate"] = "Pick a date",
         ["ValidationOffsetRange"] = "The target time must be within the next 7 days.",
         ["ExpiredMessage"] = "The schedule expired because the target time was missed by more than 10 minutes.",
         ["ExecuteError"] = "The action could not be executed.",
@@ -120,6 +159,8 @@ public sealed class LocalizationService
         ["BatteryUnavailable"] = "Battery information is currently unavailable.",
         ["CurrentAverage"] = "Current 1-minute average",
         ["RequiredBelow"] = "Required: below",
+        ["At"] = "at",
+        ["And"] = "AND",
         ["NetworkShort"] = "Network",
         ["CpuShort"] = "CPU",
         ["BatteryShort"] = "Battery",
@@ -147,6 +188,7 @@ public sealed class LocalizationService
         ["Status_Executing"] = "Executing",
         ["Status_Cancelled"] = "Cancelled",
         ["Status_Expired"] = "Expired",
+        ["Ok"] = "OK",
         ["Day_Monday"] = "Monday",
         ["Day_Tuesday"] = "Tuesday",
         ["Day_Wednesday"] = "Wednesday",
@@ -158,66 +200,67 @@ public sealed class LocalizationService
 
     private static readonly Dictionary<string, string> Spanish = new(English)
     {
-        ["Subtitle"] = "PROGRAMADOR DE ENERGIA DEL SISTEMA",
-        ["Action"] = "Accion",
-        ["Schedule"] = "Programacion",
-        ["Execution"] = "Ejecucion",
+        ["AppTitle"] = "Programador de apagado",
+        ["Subtitle"] = "PROGRAMADOR DE ENERGÍA DEL SISTEMA",
+        ["Action"] = "Acción",
+        ["Schedule"] = "Programación",
+        ["Execution"] = "Ejecución",
         ["Conditions"] = "Condiciones",
-        ["AddCondition"] = "Anadir condicion",
-        ["AddConditionDialogTitle"] = "Selecciona una condicion",
+        ["AddCondition"] = "Añadir condición",
+        ["AddConditionDialogTitle"] = "Selecciona una condición",
         ["RemoveCondition"] = "Quitar",
         ["Widget"] = "Widget",
-        ["ActiveSchedule"] = "Programacion activa",
+        ["ActiveSchedule"] = "Programación activa",
         ["ScheduleButton"] = "Programar",
-        ["ReplaceButton"] = "Reemplazar programacion",
+        ["ReplaceButton"] = "Reemplazar programación",
         ["CancelButton"] = "Cancelar",
-        ["NoActiveSchedule"] = "No hay programacion activa.",
+        ["NoActiveSchedule"] = "No hay programación activa.",
         ["NoConditions"] = "Ninguna",
         ["Status"] = "Estado",
         ["Remaining"] = "Restante",
-        ["ExecutionTime"] = "Hora de ejecucion",
+        ["ExecutionTime"] = "Hora de ejecución",
         ["Mode"] = "Modo",
         ["ExactTime"] = "Hora",
         ["RelativeMinutes"] = "Minutos desde ahora",
         ["Date"] = "Fecha",
         ["DailyTime"] = "Hora diaria",
-        ["WeeklyDay"] = "Dia",
+        ["WeeklyDay"] = "Día",
         ["WeeklyTime"] = "Hora semanal",
         ["NetworkBelow"] = "Media de red por debajo de",
         ["CpuBelow"] = "Media de CPU por debajo de",
-        ["BatteryBelow"] = "Bateria por debajo de",
+        ["BatteryBelow"] = "Batería por debajo de",
         ["EnableWidget"] = "Activar widget flotante",
         ["WidgetMode"] = "Vista del widget",
-        ["WidgetCountdown"] = "Cuenta atras",
-        ["WidgetExecution"] = "Hora de ejecucion",
-        ["WidgetGeometry"] = "Geometria del widget",
+        ["WidgetCountdown"] = "Cuenta atrás",
+        ["WidgetExecution"] = "Hora de ejecución",
+        ["WidgetGeometry"] = "Geometría del widget",
         ["Left"] = "Izquierda",
         ["Top"] = "Arriba",
         ["Width"] = "Ancho",
         ["Height"] = "Alto",
         ["ApplyWidget"] = "Aplicar widget",
         ["ValidationTitle"] = "No se puede programar",
-        ["WarningTitle"] = "Accion pendiente",
+        ["WarningTitle"] = "Acción pendiente",
         ["Postpone"] = "Posponer 5 min",
         ["Exit"] = "Salir",
         ["Open"] = "Abrir",
-        ["CancelSchedule"] = "Cancelar programacion",
+        ["CancelSchedule"] = "Cancelar programación",
         ["CancelAndExit"] = "Cancelar y salir",
         ["DisableWidget"] = "Desactivar widget",
         ["EnableWidgetShort"] = "Activar widget",
-        ["ForceAdmin"] = "Forzar admin?",
-        ["Yes"] = "Si",
+        ["ForceAdmin"] = "¿Forzar admin?",
+        ["Yes"] = "Sí",
         ["No"] = "No",
-        ["Day"] = "Dia",
+        ["Day"] = "Día",
         ["Today"] = "Hoy",
-        ["DayOffset"] = "+{0} dia",
-        ["DayOffsetPlural"] = "+{0} dias",
+        ["DayOffset"] = "+{0} día",
+        ["DayOffsetPlural"] = "+{0} días",
         ["TargetTime"] = "Hora objetivo",
         ["MinutesFromNow"] = "Hora actual + minutos",
         ["ShowOnAllScreens"] = "Mostrar widget en todas las pantallas",
-        ["WidgetSize"] = "Tamano del widget",
-        ["WidgetPosition"] = "Posicion del widget",
-        ["WidgetSmall"] = "Pequeno",
+        ["WidgetSize"] = "Tamaño del widget",
+        ["WidgetPosition"] = "Posición del widget",
+        ["WidgetSmall"] = "Pequeño",
         ["WidgetMedium"] = "Mediano",
         ["WidgetLarge"] = "Grande",
         ["WidgetAnchorTopLeft"] = "Arriba izquierda",
@@ -225,47 +268,51 @@ public sealed class LocalizationService
         ["WidgetAnchorBottomLeft"] = "Abajo izquierda",
         ["WidgetAnchorBottomRight"] = "Abajo derecha",
         ["Program"] = "Programar",
-        ["ProgramPanelText"] = "Listo para programar una accion activa.",
-        ["AppToClose"] = "Aplicacion a cerrar",
+        ["ProgramPanelText"] = "Listo para programar una acción activa.",
+        ["AppToClose"] = "Aplicación a cerrar",
         ["RefreshApps"] = "Actualizar apps",
-        ["NoAppsFound"] = "No se encontraron aplicaciones en ejecucion.",
-        ["LoadingApps"] = "Cargando aplicaciones en ejecucion...",
+        ["NoAppsFound"] = "No se encontraron aplicaciones en ejecución.",
+        ["LoadingApps"] = "Cargando aplicaciones en ejecución...",
         ["ConditionsHint"] = "Casilla para activar cada opcion",
-        ["ValidationOffsetRange"] = "La hora objetivo debe estar dentro de los proximos 7 dias.",
-        ["ExpiredMessage"] = "La programacion expiro porque la hora objetivo se supero por mas de 10 minutos.",
-        ["ExecuteError"] = "No se pudo ejecutar la accion.",
-        ["ValidationAppSelection"] = "Elige una aplicacion para cerrar.",
-        ["AppCloseError"] = "La aplicacion seleccionada ya no se esta ejecutando.",
-        ["ValidationExactTime"] = "Introduce una hora exacta valida.",
+        ["Date"] = "Fecha",
+        ["PickDate"] = "Elige una fecha",
+        ["ValidationOffsetRange"] = "La hora objetivo debe estar dentro de los próximos 7 días.",
+        ["ExpiredMessage"] = "La programación expiró porque la hora objetivo se superó por más de 10 minutos.",
+        ["ExecuteError"] = "No se pudo ejecutar la acción.",
+        ["ValidationAppSelection"] = "Elige una aplicación para cerrar.",
+        ["AppCloseError"] = "La aplicación seleccionada ya no se está ejecutando.",
+        ["ValidationExactTime"] = "Introduce una hora exacta válida.",
         ["ValidationRelativeMinutes"] = "Los minutos relativos deben ser mayores que cero.",
-        ["ValidationDateTime"] = "Introduce una fecha y hora validas.",
+        ["ValidationDateTime"] = "Introduce una fecha y hora válidas.",
         ["ValidationFutureDateTime"] = "La fecha y hora deben estar en el futuro.",
-        ["ValidationDailyTime"] = "Introduce una hora diaria valida.",
-        ["ValidationWeeklyTime"] = "Introduce una hora semanal valida.",
-        ["ValidationScheduleMode"] = "Selecciona un modo de programacion.",
-        ["ValidationNetworkThreshold"] = "El limite de red debe ser cero o mayor.",
-        ["ValidationCpuThreshold"] = "El limite de CPU debe estar entre 0 y 100.",
-        ["ValidationBatteryThreshold"] = "El limite de bateria debe estar entre 0 y 100.",
-        ["ValidationBatteryUnavailable"] = "La informacion de bateria no esta disponible en este dispositivo.",
-        ["NetworkWaiting"] = "Esperando: la media de red sigue por encima del limite.",
-        ["CpuWaiting"] = "Esperando: la media de CPU sigue por encima del limite.",
-        ["BatteryWaiting"] = "Esperando: el porcentaje de bateria sigue por encima del limite.",
-        ["BatteryUnavailable"] = "La informacion de bateria no esta disponible en este momento.",
+        ["ValidationDailyTime"] = "Introduce una hora diaria válida.",
+        ["ValidationWeeklyTime"] = "Introduce una hora semanal válida.",
+        ["ValidationScheduleMode"] = "Selecciona un modo de programación.",
+        ["ValidationNetworkThreshold"] = "El límite de red debe ser cero o mayor.",
+        ["ValidationCpuThreshold"] = "El límite de CPU debe estar entre 0 y 100.",
+        ["ValidationBatteryThreshold"] = "El límite de batería debe estar entre 0 y 100.",
+        ["ValidationBatteryUnavailable"] = "La información de batería no está disponible en este dispositivo.",
+        ["NetworkWaiting"] = "Esperando: la media de red sigue por encima del límite.",
+        ["CpuWaiting"] = "Esperando: la media de CPU sigue por encima del límite.",
+        ["BatteryWaiting"] = "Esperando: el porcentaje de batería sigue por encima del límite.",
+        ["BatteryUnavailable"] = "La información de batería no está disponible en este momento.",
         ["CurrentAverage"] = "Media actual de 1 minuto",
         ["RequiredBelow"] = "Necesario: por debajo de",
+        ["At"] = "a las",
+        ["And"] = "Y",
         ["NetworkShort"] = "Red",
         ["CpuShort"] = "CPU",
-        ["BatteryShort"] = "Bateria",
+        ["BatteryShort"] = "Batería",
         ["WidgetIn"] = "en",
         ["WidgetAt"] = "a las",
-        ["WarningText"] = "{0} esta programado en {1}.",
+        ["WarningText"] = "{0} está programado en {1}.",
         ["Action_Shutdown"] = "Apagar",
         ["Action_Restart"] = "Reiniciar",
         ["Action_Suspend"] = "Suspender",
         ["Action_Hibernate"] = "Hibernar",
-        ["Action_LogOff"] = "Cerrar sesion",
-        ["Action_LockSession"] = "Bloquear sesion",
-        ["Action_CloseApp"] = "Cerrar aplicacion",
+        ["Action_LogOff"] = "Cerrar sesión",
+        ["Action_LockSession"] = "Bloquear sesión",
+        ["Action_CloseApp"] = "Cerrar aplicación",
         ["ScheduleMode_ExactTime"] = "Hora exacta",
         ["ScheduleMode_RelativeMinutes"] = "En X minutos",
         ["ScheduleMode_DateTime"] = "Fecha y hora",
@@ -280,12 +327,13 @@ public sealed class LocalizationService
         ["Status_Executing"] = "Ejecutando",
         ["Status_Cancelled"] = "Cancelado",
         ["Status_Expired"] = "Expirado",
+        ["Ok"] = "OK",
         ["Day_Monday"] = "Lunes",
         ["Day_Tuesday"] = "Martes",
-        ["Day_Wednesday"] = "Miercoles",
+        ["Day_Wednesday"] = "Miércoles",
         ["Day_Thursday"] = "Jueves",
         ["Day_Friday"] = "Viernes",
-        ["Day_Saturday"] = "Sabado",
+        ["Day_Saturday"] = "Sábado",
         ["Day_Sunday"] = "Domingo"
     };
 }

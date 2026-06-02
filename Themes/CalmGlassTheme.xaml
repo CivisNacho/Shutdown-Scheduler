@@ -9,7 +9,163 @@
     </Style>
 
     <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
+        <ResourceDictionary x:Key="Light">
+            <x:Double x:Key="AppCornerRadius">10</x:Double>
+            <x:Double x:Key="AppInnerCornerRadius">8</x:Double>
+            <x:Double x:Key="AppControlCornerRadius">8</x:Double>
+            <x:Double x:Key="AppPanelStrokeThickness">1</x:Double>
+
+            <x:String x:Key="EditorialDisplayFontFamily">Georgia</x:String>
+
+            <SolidColorBrush x:Key="AppChromeBackgroundBrush" Color="#FFF4F1EB" />
+            <SolidColorBrush x:Key="WindowHeroBackgroundBrush" Color="#FFF8F5EE" />
+            <SolidColorBrush x:Key="WindowHeroBorderBrush" Color="#FFD2C8B8" />
+            <SolidColorBrush x:Key="GlassPanelBackgroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="GlassPanelSecondaryBackgroundBrush" Color="#FFF9F6F0" />
+            <SolidColorBrush x:Key="GlassPanelBorderBrush" Color="#FFD9CFBF" />
+            <SolidColorBrush x:Key="GlassPanelStrongBorderBrush" Color="#FF8290A1" />
+            <SolidColorBrush x:Key="GlassPanelDividerBrush" Color="#FFE5DCCF" />
+            <SolidColorBrush x:Key="GlassPanelInsetBrush" Color="#FFFCFAF6" />
+            <SolidColorBrush x:Key="HeroEyebrowBrush" Color="#FF6B7480" />
+            <SolidColorBrush x:Key="HeroValueBrush" Color="#FF1D1F22" />
+            <SolidColorBrush x:Key="HeroCaptionBrush" Color="#FF5E564E" />
+            <SolidColorBrush x:Key="SectionHeadingBrush" Color="#FF272A2F" />
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#FF3A3E45" />
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#FF5E564E" />
+            <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#FF3A4656" />
+            <SolidColorBrush x:Key="PrimaryButtonBorderBrush" Color="#FF566274" />
+            <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFFAF8F3" />
+            <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="#FFF3EEE4" />
+            <SolidColorBrush x:Key="SecondaryButtonBorderBrush" Color="#FFD2C8B8" />
+            <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#FF2C3138" />
+            <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ControlBorderBrush" Color="#FFCBC1B1" />
+            <SolidColorBrush x:Key="ControlForegroundBrush" Color="#FF20252B" />
+            <SolidColorBrush x:Key="PopupBackgroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="PopupBorderBrush" Color="#FFD0C6B6" />
+            <SolidColorBrush x:Key="PopupHoverBrush" Color="#FFF2EDE3" />
+            <SolidColorBrush x:Key="PopupSelectedBrush" Color="#FFEAE3D6" />
+            <SolidColorBrush x:Key="PopupPressedBrush" Color="#FFE0D8C8" />
+            <SolidColorBrush x:Key="PopupForegroundBrush" Color="#FF21262D" />
+            <SolidColorBrush x:Key="NumberBoxPopupIndicatorForeground" Color="#FF6B6259" />
+            <SolidColorBrush x:Key="NumberBoxPopupBackground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="NumberBoxPopupBorderBrush" Color="#FFD0C6B6" />
+            <Thickness x:Key="NumberBoxPopupBorderThickness">1</Thickness>
+            <SolidColorBrush x:Key="NumberBoxPopupSpinButtonBackground" Color="#FFF3EEE4" />
+            <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">1</Thickness>
+            <Thickness x:Key="NumberBoxSpinButtonBorderThickness">0,1,1,1</Thickness>
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#FFF8F3E9" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#FFF1EADB" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#FFF4EFE5" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FFCBC1B1" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FF94A1B2" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#FF718094" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#FF718094" />
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#FF20252B" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#FF1C2026" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#FF171B20" />
+            <SolidColorBrush x:Key="ComboBoxForegroundDisabled" Color="#FF968D82" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#FFD0C6B6" />
+            <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#FF20252B" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackground" Color="#FFF7F2E8" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPointerOver" Color="#FFEFE8D8" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPressed" Color="#FFE2DAC9" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForeground" Color="#FF556273" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPointerOver" Color="#FF24303D" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPressed" Color="#FF1D2732" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#FFF2EDE3" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#FFE0D8C8" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#FFEAE3D6" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#FFE1D8C7" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FF1C2026" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FF171B20" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FF171B20" />
+            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF607086" />
+            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FFF3EDE1" />
+
+            <Style x:Key="GlassSectionContainerStyle" TargetType="Border">
+                <Setter Property="Padding" Value="18" />
+                <Setter Property="Background" Value="{ThemeResource GlassPanelBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource GlassPanelBorderBrush}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource AppPanelStrokeThickness}" />
+                <Setter Property="CornerRadius" Value="{ThemeResource AppCornerRadius}" />
+            </Style>
+
+            <Style x:Key="SectionHeadingTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{ThemeResource SectionHeadingBrush}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="SectionDividerStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource GlassPanelDividerBrush}" />
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+
+            <Style x:Key="FormRowLabelStyle" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                <Setter Property="Foreground" Value="{ThemeResource SubtleTextBrush}" />
+            </Style>
+
+            <Style x:Key="FormToggleSwitchStyle" TargetType="ToggleSwitch">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="OnContent" Value="" />
+                <Setter Property="OffContent" Value="" />
+            </Style>
+
+            <Style x:Key="GlassPrimaryButtonStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="42" />
+                <Setter Property="Padding" Value="18,10" />
+                <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
+                <Setter Property="Background" Value="{ThemeResource PrimaryButtonBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource PrimaryButtonBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{ThemeResource PrimaryButtonForegroundBrush}" />
+            </Style>
+
+            <Style x:Key="GlassSecondaryButtonStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="42" />
+                <Setter Property="Padding" Value="16,10" />
+                <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
+                <Setter Property="Background" Value="{ThemeResource SecondaryButtonBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource SecondaryButtonBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{ThemeResource SecondaryButtonForegroundBrush}" />
+            </Style>
+
+            <Style x:Key="GlassTextBoxStyle" TargetType="TextBox">
+                <Setter Property="MinHeight" Value="44" />
+                <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
+                <Setter Property="Background" Value="{ThemeResource ControlBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource ControlBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{ThemeResource ControlForegroundBrush}" />
+            </Style>
+
+            <Style x:Key="GlassNumberBoxStyle" TargetType="NumberBox">
+                <Setter Property="Background" Value="{ThemeResource ControlBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource ControlBorderBrush}" />
+                <Setter Property="Foreground" Value="{ThemeResource ControlForegroundBrush}" />
+            </Style>
+
+            <Style x:Key="GlassListViewStyle" TargetType="ListView">
+                <Setter Property="CornerRadius" Value="{ThemeResource AppInnerCornerRadius}" />
+                <Setter Property="Background" Value="{ThemeResource GlassPanelInsetBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource GlassPanelBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Style>
+
+
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
             <x:Double x:Key="AppCornerRadius">10</x:Double>
             <x:Double x:Key="AppInnerCornerRadius">8</x:Double>
             <x:Double x:Key="AppControlCornerRadius">8</x:Double>
@@ -28,10 +184,10 @@
             <SolidColorBrush x:Key="GlassPanelInsetBrush" Color="#FF0F1012" />
             <SolidColorBrush x:Key="HeroEyebrowBrush" Color="#FF8994A0" />
             <SolidColorBrush x:Key="HeroValueBrush" Color="#FFF3EFE7" />
-            <SolidColorBrush x:Key="HeroCaptionBrush" Color="#FFA9A296" />
+            <SolidColorBrush x:Key="HeroCaptionBrush" Color="#FFC2B9AC" />
             <SolidColorBrush x:Key="SectionHeadingBrush" Color="#FFF2EFE9" />
             <SolidColorBrush x:Key="SubtleTextBrush" Color="#FFD6D0C6" />
-            <SolidColorBrush x:Key="MutedTextBrush" Color="#FF8B867E" />
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#FF9F988C" />
             <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#FF202329" />
             <SolidColorBrush x:Key="PrimaryButtonBorderBrush" Color="#FF697481" />
             <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFF4F1EB" />
@@ -165,82 +321,82 @@
 
         </ResourceDictionary>
 
-        <ResourceDictionary x:Key="Light">
+        <ResourceDictionary x:Key="HighContrast">
             <x:Double x:Key="AppCornerRadius">10</x:Double>
             <x:Double x:Key="AppInnerCornerRadius">8</x:Double>
             <x:Double x:Key="AppControlCornerRadius">8</x:Double>
             <x:Double x:Key="AppPanelStrokeThickness">1</x:Double>
 
-            <x:String x:Key="EditorialDisplayFontFamily">Georgia</x:String>
+            <x:String x:Key="EditorialDisplayFontFamily">Segoe UI</x:String>
 
-            <SolidColorBrush x:Key="AppChromeBackgroundBrush" Color="#FF0B0B0C" />
-            <SolidColorBrush x:Key="WindowHeroBackgroundBrush" Color="#FF141416" />
-            <SolidColorBrush x:Key="WindowHeroBorderBrush" Color="#FF25272B" />
-            <SolidColorBrush x:Key="GlassPanelBackgroundBrush" Color="#FF121315" />
-            <SolidColorBrush x:Key="GlassPanelSecondaryBackgroundBrush" Color="#FF18191C" />
-            <SolidColorBrush x:Key="GlassPanelBorderBrush" Color="#FF282A2E" />
-            <SolidColorBrush x:Key="GlassPanelStrongBorderBrush" Color="#FF5A6470" />
-            <SolidColorBrush x:Key="GlassPanelDividerBrush" Color="#FF24262A" />
-            <SolidColorBrush x:Key="GlassPanelInsetBrush" Color="#FF0F1012" />
-            <SolidColorBrush x:Key="HeroEyebrowBrush" Color="#FF8994A0" />
-            <SolidColorBrush x:Key="HeroValueBrush" Color="#FFF3EFE7" />
-            <SolidColorBrush x:Key="HeroCaptionBrush" Color="#FFA9A296" />
-            <SolidColorBrush x:Key="SectionHeadingBrush" Color="#FFF2EFE9" />
-            <SolidColorBrush x:Key="SubtleTextBrush" Color="#FFD6D0C6" />
-            <SolidColorBrush x:Key="MutedTextBrush" Color="#FF8B867E" />
-            <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#FF202329" />
-            <SolidColorBrush x:Key="PrimaryButtonBorderBrush" Color="#FF697481" />
-            <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFF4F1EB" />
-            <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="#FF151619" />
-            <SolidColorBrush x:Key="SecondaryButtonBorderBrush" Color="#FF303338" />
-            <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#FFE3DED5" />
-            <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#FF0E0F11" />
-            <SolidColorBrush x:Key="ControlBorderBrush" Color="#FF2D3035" />
-            <SolidColorBrush x:Key="ControlForegroundBrush" Color="#FFF2EEE8" />
-            <SolidColorBrush x:Key="PopupBackgroundBrush" Color="#FF18191C" />
-            <SolidColorBrush x:Key="PopupBorderBrush" Color="#FF353940" />
-            <SolidColorBrush x:Key="PopupHoverBrush" Color="#FF23262B" />
-            <SolidColorBrush x:Key="PopupSelectedBrush" Color="#FF2B3138" />
-            <SolidColorBrush x:Key="PopupPressedBrush" Color="#FF313841" />
-            <SolidColorBrush x:Key="PopupForegroundBrush" Color="#FFF2EEE8" />
-            <SolidColorBrush x:Key="NumberBoxPopupIndicatorForeground" Color="#FFA9A296" />
-            <SolidColorBrush x:Key="NumberBoxPopupBackground" Color="#FF18191C" />
-            <SolidColorBrush x:Key="NumberBoxPopupBorderBrush" Color="#FF353940" />
+            <SolidColorBrush x:Key="AppChromeBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="WindowHeroBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="WindowHeroBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="GlassPanelBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="GlassPanelSecondaryBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="GlassPanelBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="GlassPanelStrongBorderBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="GlassPanelDividerBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="GlassPanelInsetBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="HeroEyebrowBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="HeroValueBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="HeroCaptionBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="SectionHeadingBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="PrimaryButtonBorderBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="SecondaryButtonBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="ControlBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ControlForegroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="PopupBackgroundBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="PopupBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="PopupHoverBrush" Color="#FF202020" />
+            <SolidColorBrush x:Key="PopupSelectedBrush" Color="#FF202020" />
+            <SolidColorBrush x:Key="PopupPressedBrush" Color="#FF303030" />
+            <SolidColorBrush x:Key="PopupForegroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="NumberBoxPopupIndicatorForeground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="NumberBoxPopupBackground" Color="#FF000000" />
+            <SolidColorBrush x:Key="NumberBoxPopupBorderBrush" Color="#FFFFFFFF" />
             <Thickness x:Key="NumberBoxPopupBorderThickness">1</Thickness>
-            <SolidColorBrush x:Key="NumberBoxPopupSpinButtonBackground" Color="#FF202329" />
+            <SolidColorBrush x:Key="NumberBoxPopupSpinButtonBackground" Color="#FF000000" />
             <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">1</Thickness>
             <Thickness x:Key="NumberBoxSpinButtonBorderThickness">0,1,1,1</Thickness>
-            <SolidColorBrush x:Key="ComboBoxBackground" Color="#FF0E0F11" />
-            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#FF131519" />
-            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#FF17191D" />
-            <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#FF101113" />
-            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FF2D3035" />
-            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FF4B5561" />
-            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#FF697481" />
-            <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#FF697481" />
-            <SolidColorBrush x:Key="ComboBoxForeground" Color="#FFF2EEE8" />
-            <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#FFF5F2EC" />
-            <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#FFF7F4EF" />
-            <SolidColorBrush x:Key="ComboBoxForegroundDisabled" Color="#FF78736C" />
-            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FF18191C" />
-            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#FF353940" />
-            <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#FFF2EEE8" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackground" Color="#FF141518" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPointerOver" Color="#FF1C2025" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPressed" Color="#FF252B33" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonForeground" Color="#FFB8C1CC" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPointerOver" Color="#FFF2EEE8" />
-            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPressed" Color="#FFF7F4EF" />
-            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#FF23262B" />
-            <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#FF313841" />
-            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#FF2B3138" />
-            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#FF343B45" />
-            <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FFF5F2EC" />
-            <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FFF7F4EF" />
-            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFF7F4EF" />
-            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FF141517" />
-            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF758190" />
-            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FF1E2024" />
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#FF000000" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#FF202020" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#FF303030" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#FF000000" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxForegroundDisabled" Color="#FFB3B3B3" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FF000000" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackground" Color="#FF000000" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPointerOver" Color="#FF202020" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonBackgroundPressed" Color="#FF303030" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForeground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPointerOver" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownButtonForegroundPressed" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#FF202020" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#FF303030" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#FF202020" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#FF303030" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FF000000" />
 
             <Style x:Key="GlassSectionContainerStyle" TargetType="Border">
                 <Setter Property="Padding" Value="18" />
@@ -282,7 +438,7 @@
                 <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
                 <Setter Property="Background" Value="{ThemeResource PrimaryButtonBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource PrimaryButtonBorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="Foreground" Value="{ThemeResource PrimaryButtonForegroundBrush}" />
             </Style>
 
@@ -292,7 +448,7 @@
                 <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
                 <Setter Property="Background" Value="{ThemeResource SecondaryButtonBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource SecondaryButtonBorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="Foreground" Value="{ThemeResource SecondaryButtonForegroundBrush}" />
             </Style>
 
@@ -301,7 +457,7 @@
                 <Setter Property="CornerRadius" Value="{ThemeResource AppControlCornerRadius}" />
                 <Setter Property="Background" Value="{ThemeResource ControlBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource ControlBorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="Foreground" Value="{ThemeResource ControlForegroundBrush}" />
             </Style>
 
@@ -315,10 +471,8 @@
                 <Setter Property="CornerRadius" Value="{ThemeResource AppInnerCornerRadius}" />
                 <Setter Property="Background" Value="{ThemeResource GlassPanelInsetBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource GlassPanelBorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
             </Style>
-
-
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

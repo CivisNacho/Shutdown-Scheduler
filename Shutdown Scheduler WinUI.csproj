@@ -39,6 +39,24 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="AssemblyInfo.cs" />
+    <Compile Remove="Controls\DateTimePicker.xaml.cs" />
+    <Compile Remove="Services\TrayService.cs" />
+    <Compile Remove="Services\WidgetService.cs" />
+    <Compile Remove="Services\WpfAppTimer.cs" />
+    <Compile Remove="Services\WpfUserNotificationService.cs" />
+    <Compile Remove="Views\WarningWindow.xaml.cs" />
+    <Page Remove="Controls\DateTimePicker.xaml" />
+    <Page Remove="Views\WarningWindow.xaml" />
+    <None Include="AssemblyInfo.cs" />
+    <None Include="Controls\DateTimePicker.xaml" />
+    <None Include="Controls\DateTimePicker.xaml.cs" />
+    <None Include="Services\TrayService.cs" />
+    <None Include="Services\WidgetService.cs" />
+    <None Include="Services\WpfAppTimer.cs" />
+    <None Include="Services\WpfUserNotificationService.cs" />
+    <None Include="Views\WarningWindow.xaml" />
+    <None Include="Views\WarningWindow.xaml.cs" />
     <Compile Remove="ShutdownScheduler.Core\**\*.cs" />
     <EmbeddedResource Remove="ShutdownScheduler.Core\**" />
     <None Remove="ShutdownScheduler.Core\**" />
@@ -64,9 +82,19 @@
 
   <!-- Publish Properties -->
   <PropertyGroup>
-    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!-- Only enable publish-time optimizations during publish/package, not regular builds. -->
+    <PublishReadyToRun Condition="'$(IsPublish)'=='true' and '$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishTrimmed Condition="'$(IsPublish)'=='true' and '$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <!-- Disable symbol package generation to avoid requiring VS-specific tooling (mspdbcmf.exe). -->
+    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <AppxBundle>Auto</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
 </Project>

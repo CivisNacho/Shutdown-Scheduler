@@ -4,11 +4,15 @@ $assetsDir = Join-Path $PSScriptRoot "..\Assets"
 $assetsDir = [System.IO.Path]::GetFullPath($assetsDir)
 
 $colors = @{
-    Panel = [System.Drawing.Color]::FromArgb(255, 16, 17, 20)
-    PanelEdge = [System.Drawing.Color]::FromArgb(255, 43, 47, 54)
-    Accent = [System.Drawing.Color]::FromArgb(255, 122, 146, 173)
-    Paper = [System.Drawing.Color]::FromArgb(255, 243, 240, 233)
-    Shadow = [System.Drawing.Color]::FromArgb(130, 0, 0, 0)
+    Panel = [System.Drawing.Color]::FromArgb(255, 15, 18, 25)
+    PanelEdge = [System.Drawing.Color]::FromArgb(255, 44, 48, 60)
+    PanelGlow = [System.Drawing.Color]::FromArgb(255, 29, 34, 46)
+    AccentStart = [System.Drawing.Color]::FromArgb(255, 31, 94, 228)
+    AccentEnd = [System.Drawing.Color]::FromArgb(255, 73, 205, 255)
+    PaperTop = [System.Drawing.Color]::FromArgb(255, 214, 219, 229)
+    PaperBottom = [System.Drawing.Color]::FromArgb(255, 173, 180, 193)
+    Dash = [System.Drawing.Color]::FromArgb(255, 64, 70, 89)
+    Shadow = [System.Drawing.Color]::FromArgb(150, 0, 0, 0)
 }
 
 function New-RoundedRectPath {
@@ -59,7 +63,7 @@ function Draw-SchedulerIcon {
         [bool]$WideSurface
     )
 
-    $stroke = [Math]::Max(3, $Size * 0.09)
+    $stroke = [Math]::Max(3, $Size * 0.085)
     $center = $Size / 2.0
 
     if (-not $TransparentBackground) {
@@ -74,7 +78,11 @@ function Draw-SchedulerIcon {
 
         $cardRect = New-RectF $margin $margin ($Size - ($margin * 2)) ($Size - ($margin * 2))
         $cardPath = New-RoundedRectPath $cardRect.X $cardRect.Y $cardRect.Width $cardRect.Height $radius
-        $cardBrush = [System.Drawing.SolidBrush]::new($colors.Panel)
+        $cardBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+            [System.Drawing.PointF]::new(0, 0),
+            [System.Drawing.PointF]::new($Size, $Size),
+            $colors.PanelGlow,
+            $colors.Panel)
         $cardBorder = [System.Drawing.Pen]::new($colors.PanelEdge, [Math]::Max(1.5, $Size * 0.018))
         $Graphics.FillPath($cardBrush, $cardPath)
         $Graphics.DrawPath($cardBorder, $cardPath)
@@ -83,54 +91,84 @@ function Draw-SchedulerIcon {
         $cardPath.Dispose()
     }
 
-    $glyphPadding = if ($TransparentBackground) { $Size * 0.14 } else { $Size * 0.2 }
-    $ringRect = New-RectF $glyphPadding ($glyphPadding + ($Size * 0.01)) ($Size - ($glyphPadding * 2)) ($Size - ($glyphPadding * 2))
-    $accentPen = [System.Drawing.Pen]::new($colors.Accent, $stroke)
+    $glyphPadding = if ($TransparentBackground) { $Size * 0.12 } else { $Size * 0.15 }
+    $ringRect = New-RectF $glyphPadding ($glyphPadding + ($Size * 0.01)) ($Size - ($glyphPadding * 2.0)) ($Size - ($glyphPadding * 2.0))
+    $accentBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+        [System.Drawing.PointF]::new($ringRect.X, $ringRect.Bottom),
+        [System.Drawing.PointF]::new($ringRect.Right, $ringRect.Y),
+        $colors.AccentStart,
+        $colors.AccentEnd)
+    $accentPen = [System.Drawing.Pen]::new($accentBrush, $stroke)
     $accentPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
     $accentPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $paperPen = [System.Drawing.Pen]::new($colors.Paper, $stroke)
+    $paperBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+        [System.Drawing.PointF]::new($center, $ringRect.Y),
+        [System.Drawing.PointF]::new($center, $ringRect.Bottom),
+        $colors.PaperTop,
+        $colors.PaperBottom)
+    $paperPen = [System.Drawing.Pen]::new($paperBrush, $stroke * 0.92)
     $paperPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
     $paperPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
 
-    $Graphics.DrawArc($accentPen, $ringRect.X, $ringRect.Y, $ringRect.Width, $ringRect.Height, 214, 180)
-    $Graphics.DrawArc($paperPen, $ringRect.X, $ringRect.Y, $ringRect.Width, $ringRect.Height, 34, 74)
+    $Graphics.DrawArc($accentPen, $ringRect.X, $ringRect.Y, $ringRect.Width, $ringRect.Height, 128, 248)
 
-    $notchWidth = $stroke * 0.68
-    $notchHeight = $Size * 0.16
-    $notchBrush = [System.Drawing.SolidBrush]::new($colors.Paper)
-    $Graphics.FillRectangle(
-        $notchBrush,
-        $center - ($notchWidth / 2),
-        $ringRect.Y - ($notchHeight * 0.08),
-        $notchWidth,
-        $notchHeight)
+    $arrowPath = [System.Drawing.Drawing2D.GraphicsPath]::new()
+    $arrowScale = $Size * 0.175
+    $arrowBaseX = $ringRect.Right - ($Size * 0.02)
+    $arrowBaseY = $ringRect.Y + ($Size * 0.15)
+    $arrowPoints = @(
+        [System.Drawing.PointF]::new($arrowBaseX - ($arrowScale * 1.18), $arrowBaseY + ($arrowScale * 0.1)),
+        [System.Drawing.PointF]::new($arrowBaseX - ($arrowScale * 0.46), $arrowBaseY - ($arrowScale * 0.46)),
+        [System.Drawing.PointF]::new($arrowBaseX, $arrowBaseY + ($arrowScale * 0.62))
+    )
+    $arrowPath.AddPolygon($arrowPoints)
+    $Graphics.FillPath($accentBrush, $arrowPath)
 
-    $handPen = [System.Drawing.Pen]::new($colors.Paper, [Math]::Max(2.5, $stroke * 0.34))
-    $handPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $handPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $Graphics.DrawLine($handPen, $center, $center, $center, $center - ($ringRect.Height * 0.2))
-    $Graphics.DrawLine($handPen, $center, $center, $center + ($ringRect.Width * 0.17), $center + ($ringRect.Height * 0.12))
+    $powerRect = New-RectF ($center - ($Size * 0.16)) ($center - ($Size * 0.14)) ($Size * 0.32) ($Size * 0.32)
+    $Graphics.DrawArc($paperPen, $powerRect.X, $powerRect.Y, $powerRect.Width, $powerRect.Height, 42, 276)
 
-    $dotBrush = [System.Drawing.SolidBrush]::new($colors.Paper)
-    $dotSize = $stroke * 0.34
-    $Graphics.FillEllipse($dotBrush, $center - ($dotSize / 2), $center - ($dotSize / 2), $dotSize, $dotSize)
+    $stemWidth = $stroke * 0.86
+    $stemHeight = $Size * 0.21
+    $stemX = $center - ($stemWidth / 2)
+    $stemY = $powerRect.Y - ($Size * 0.005)
+    $stemPath = New-RoundedRectPath $stemX $stemY $stemWidth $stemHeight ($stemWidth * 0.5)
+    $Graphics.FillPath($paperBrush, $stemPath)
 
-    if (-not $TransparentBackground -and -not $WideSurface) {
-        $tickPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(110, $colors.PanelEdge), [Math]::Max(1.2, $Size * 0.012))
-        $tickY = $ringRect.Bottom - ($stroke * 0.05)
-        $tickGap = $stroke * 0.5
-        for ($i = -1; $i -le 1; $i++) {
-            $tickX = $center + ($i * $tickGap * 1.6)
-            $Graphics.DrawLine($tickPen, $tickX, $tickY, $tickX, $tickY + ($Size * 0.06))
+    if ($TransparentBackground) {
+        $dashPen = [System.Drawing.Pen]::new($colors.Dash, [Math]::Max(2, $stroke * 0.44))
+        $dashPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+        $dashPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+        $Graphics.DrawArc($dashPen, $ringRect.X, $ringRect.Y, $ringRect.Width, $ringRect.Height, 20, 62)
+        $dashPen.Dispose()
+    }
+    elseif (-not $WideSurface) {
+        $dashBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(230, $colors.Dash))
+        $dashWidth = $stroke * 0.58
+        $dashHeight = $stroke * 1.18
+        $dashRadius = $dashWidth * 0.35
+        $angles = @(16, 34, 52, 70)
+        foreach ($angle in $angles) {
+            $radians = [Math]::PI * $angle / 180.0
+            $radius = ($ringRect.Width / 2.0) + ($stroke * 0.64)
+            $dashCenterX = $center + ([Math]::Cos($radians) * $radius)
+            $dashCenterY = $center + ([Math]::Sin($radians) * $radius)
+            $dashPath = New-RoundedRectPath ($dashCenterX - ($dashWidth / 2)) ($dashCenterY - ($dashHeight / 2)) $dashWidth $dashHeight $dashRadius
+            $matrix = [System.Drawing.Drawing2D.Matrix]::new()
+            $matrix.RotateAt($angle + 4, [System.Drawing.PointF]::new($dashCenterX, $dashCenterY))
+            $dashPath.Transform($matrix)
+            $Graphics.FillPath($dashBrush, $dashPath)
+            $matrix.Dispose()
+            $dashPath.Dispose()
         }
-        $tickPen.Dispose()
+        $dashBrush.Dispose()
     }
 
+    $accentBrush.Dispose()
+    $paperBrush.Dispose()
     $accentPen.Dispose()
     $paperPen.Dispose()
-    $notchBrush.Dispose()
-    $handPen.Dispose()
-    $dotBrush.Dispose()
+    $arrowPath.Dispose()
+    $stemPath.Dispose()
 }
 
 function Save-SquareIcon {
@@ -176,7 +214,7 @@ function Save-WideLogo {
     $iconY = [int](($Height - $iconBitmap.Height) / 2)
     $graphics.DrawImage($iconBitmap, $iconX, $iconY, $iconBitmap.Width, $iconBitmap.Height)
 
-    $titleBrush = [System.Drawing.SolidBrush]::new($colors.Paper)
+    $titleBrush = [System.Drawing.SolidBrush]::new($colors.PaperTop)
     $captionBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(220, 163, 169, 178))
     $titleFont = [System.Drawing.Font]::new("Segoe UI Semibold", [Math]::Max(18, $Height * 0.13), [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
     $captionFont = [System.Drawing.Font]::new("Segoe UI", [Math]::Max(12, $Height * 0.07), [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
@@ -185,7 +223,7 @@ function Save-WideLogo {
     $titleY = [int]($Height * 0.34)
     $captionY = [int]($Height * 0.56)
     $graphics.DrawString("Shutdown Scheduler", $titleFont, $titleBrush, $textX, $titleY)
-    $graphics.DrawString("Dark schedule utility", $captionFont, $captionBrush, $textX, $captionY)
+    $graphics.DrawString("Timed power control", $captionFont, $captionBrush, $textX, $captionY)
 
     $titleBrush.Dispose()
     $captionBrush.Dispose()
