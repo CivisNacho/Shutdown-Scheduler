@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using Shutdown_Scheduler.Models;
 
 namespace Shutdown_Scheduler.Services;
@@ -92,15 +93,24 @@ public sealed class ActionExecutionService
         }
     }
 
+    private static bool IsCurrentProcessElevated()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+    }
+
     private static void StartShutdown(string actionFlag, bool forced)
     {
         var args = $"{actionFlag} /t 0";
         if (forced) args += " /f";
 
+        // If we're already elevated, run shutdown.exe directly — no UAC prompt.
+        // If not elevated and forced, request elevation via runas (legacy fallback).
+        var needsElevation = forced && !IsCurrentProcessElevated();
         var startInfo = new ProcessStartInfo("shutdown.exe", args)
         {
             UseShellExecute = true,
-            Verb = forced ? "runas" : string.Empty
+            Verb = needsElevation ? "runas" : string.Empty
         };
 
         Process.Start(startInfo);

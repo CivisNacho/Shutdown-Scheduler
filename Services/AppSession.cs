@@ -1,10 +1,12 @@
 using System;
+using System.Globalization;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler.ViewModels;
 using Shutdown_Scheduler_WinUI;
 using Shutdown_Scheduler_WinUI.Services;
+using Windows.System.UserProfile;
 
 namespace Shutdown_Scheduler.Services;
 
@@ -26,7 +28,7 @@ public sealed class AppSession : IDisposable
 
     public AppSession(DispatcherQueue dispatcherQueue)
     {
-        _localization = new LocalizationService();
+        _localization = new LocalizationService(ResolveUserPreferredCulture());
         _appDetectionExclusions = new AppDetectionExclusionStore();
         _runningApps = new RunningAppDiscoveryService(_appDetectionExclusions);
         _cpu = new CpuMonitorService();
@@ -53,6 +55,7 @@ public sealed class AppSession : IDisposable
 
         _scheduler.ScheduleChanged += OnScheduleChanged;
         _scheduler.Tick += OnSchedulerTick;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         RefreshBackgroundSurfaces();
     }
 
@@ -117,6 +120,7 @@ public sealed class AppSession : IDisposable
         _isDisposed = true;
         _scheduler.ScheduleChanged -= OnScheduleChanged;
         _scheduler.Tick -= OnSchedulerTick;
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         _widget.Dispose();
         _tray.Dispose();
         _cpu.Dispose();
@@ -140,6 +144,24 @@ public sealed class AppSession : IDisposable
         RefreshTray();
     }
 
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(MainViewModel.IsForcedAdmin)) return;
+        if (!_viewModel.IsForcedAdmin) return;
+        if (ElevationService.IsElevated) return;
+
+        bool restarted = ElevationService.TryRestartAsAdmin();
+        if (restarted)
+        {
+            ExitApplication();
+        }
+        else
+        {
+            // User cancelled UAC — revert the toggle
+            _viewModel.IsForcedAdmin = false;
+        }
+    }
+
     private void OnScheduleChanged(object? sender, EventArgs e)
     {
         RefreshBackgroundSurfaces();
@@ -159,5 +181,28 @@ public sealed class AppSession : IDisposable
     private void RefreshTray()
     {
         _tray.Update(_scheduler.ActiveSchedule is not null, _widget.Settings.Enabled, _mainWindow is not null);
+    }
+
+    private static CultureInfo ResolveUserPreferredCulture()
+    {
+        foreach (var language in GlobalizationPreferences.Languages)
+        {
+            try
+            {
+                var culture = CultureInfo.GetCultureInfo(language);
+                var languageTag = culture.TwoLetterISOLanguageName;
+                if (languageTag.Equals("es", StringComparison.OrdinalIgnoreCase) ||
+                    languageTag.Equals("en", StringComparison.OrdinalIgnoreCase))
+                {
+                    return culture;
+                }
+            }
+            catch (CultureNotFoundException)
+            {
+                // Ignore unsupported language tags and continue through the preference list.
+            }
+        }
+
+        return CultureInfo.GetCultureInfo("en-US");
     }
 }
