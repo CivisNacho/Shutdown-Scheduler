@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7b4dff"/>
+      <stop offset="1" stop-color="#ff4f87"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0.25" cy="0.15" r="0.8">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="48" y="48" width="928" height="928" rx="216" fill="url(#bg)"/>
+  <rect x="48" y="48" width="928" height="928" rx="216" fill="url(#shine)"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <!-- power ring, open at the top -->
+    <path d="M665.9 315A250 250 0 1 1 358.1 315" stroke-width="72"/>
+    <!-- minute hand doubles as the power stem -->
+    <path d="M512 512V262" stroke-width="72"/>
+    <!-- second hand -->
+    <path d="M512 512L614 571" stroke-width="44" stroke-opacity="0.65"/>
+  </g>
+  <circle cx="512" cy="512" r="52" fill="#fff"/>
+  <circle cx="512" cy="512" r="20" fill="#d94a9a"/>
+</svg>

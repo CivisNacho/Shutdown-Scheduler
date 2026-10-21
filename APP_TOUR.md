@@ -551,16 +551,12 @@ These files are still present in the repo, but the WinUI project excludes them f
 
 ## Icon Generation Tool
 
-### `tools/GenerateAppIcons.ps1`
-- `New-RoundedRectPath(...)` builds rounded rectangle paths for the icon art.
-- `Initialize-Graphics(...)` turns on high-quality rendering settings.
-- `New-RectF(...)` creates a `RectangleF` helper.
-- `Draw-SchedulerIcon(...)` draws the scheduler emblem at a given size.
-- `Save-SquareIcon(...)` renders a square PNG.
-- `Save-WideLogo(...)` renders the wide store-style logo.
-- `Save-SplashLogo(...)` renders the splash-screen artwork.
-- `Save-IcoFile(...)` renders the `.ico` file used by the app.
-- The script body generates every asset in `Assets/`.
+### `Assets/AppIcon.svg`
+- Vector master of the app icon: a power symbol whose stem is a clock hand, on a violet-to-coral squircle.
+
+### `tools/generate_app_icons.py`
+- Renders `AppIcon.svg` with headless Chrome and Pillow into every PNG in `Assets/`, plus the multi-size `AppIcon.ico`.
+- Run `python tools/generate_app_icons.py` after editing the SVG.
 
 ## Solution Files
 
