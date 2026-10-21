@@ -30,6 +30,7 @@ public sealed class WinUiUserNotificationService : IUserNotificationService
                 CloseButtonText = "OK",
                 XamlRoot = root
             };
+            ThemeResources.ApplyDialogStyle(dialog);
 
             await dialog.ShowAsync();
         });

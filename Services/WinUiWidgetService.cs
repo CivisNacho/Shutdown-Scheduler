@@ -116,28 +116,16 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
             ? schedule.TargetTime.ToString("HH:mm")
             : RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
         var conditionIcons = GetConditionIcons(schedule.Request);
-        _window.SetScheduleText(actionText, GetActionGlyph(schedule.Request.Action), timeText, conditionIcons);
+        _window.SetScheduleText(actionText, AppGlyphs.ForAction(schedule.Request.Action), timeText, conditionIcons);
     }
-
-    private static string GetActionGlyph(PowerAction action)
-        => action switch
-        {
-            PowerAction.Restart => "", // Refresh
-            PowerAction.Suspend => "", // Moon
-            PowerAction.Hibernate => "", // Clock
-            PowerAction.LogOff => "", // Switch user
-            PowerAction.LockSession => "", // Lock
-            PowerAction.CloseApp => "", // Close
-            _ => "" // Power
-        };
 
     private static string GetConditionIcons(ScheduleRequest request)
     {
         var icons = new List<string>(4);
-        if (request.NetworkConditionEnabled) icons.Add("\uEC05"); // Wi-Fi
-        if (request.CpuConditionEnabled) icons.Add("\uE7F8"); // CPU-like glyph
-        if (request.BatteryConditionEnabled) icons.Add("\uE850"); // Battery
-        if (request.AppIdleConditionEnabled) icons.Add("\uE916"); // Stopwatch
+        if (request.NetworkConditionEnabled) icons.Add(AppGlyphs.ForCondition(ConditionType.Network));
+        if (request.CpuConditionEnabled) icons.Add(AppGlyphs.ForCondition(ConditionType.Cpu));
+        if (request.BatteryConditionEnabled) icons.Add(AppGlyphs.ForCondition(ConditionType.Battery));
+        if (request.AppIdleConditionEnabled) icons.Add(AppGlyphs.ForCondition(ConditionType.AppIdle));
         return string.Join('|', icons);
     }
 

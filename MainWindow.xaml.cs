@@ -83,6 +83,7 @@ namespace Shutdown_Scheduler_WinUI
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
             Root.Loaded += OnLoaded;
             Root.SizeChanged += OnRootSizeChanged;
+            TargetDial.TargetChanged += OnTargetDialChanged;
             Root.ActualThemeChanged += OnRootActualThemeChanged;
             _scheduler.WarningDue += OnWarningDue;
             _scheduler.Error += OnSchedulerError;
@@ -93,7 +94,6 @@ namespace Shutdown_Scheduler_WinUI
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            ApplyLocalDateFormat();
             SyncPickersFromViewModel();
             ApplyTitleBarTheme();
             if (_restoreMaximized)
@@ -210,6 +210,7 @@ namespace Shutdown_Scheduler_WinUI
             Grid.SetRow(HeaderActionsHost, narrow ? 1 : 0);
             Grid.SetColumn(HeaderActionsHost, narrow ? 0 : 1);
             Grid.SetColumnSpan(HeaderActionsHost, narrow ? 2 : 1);
+            HeaderActionsHost.Margin = narrow ? new Thickness(0, 16, 0, 0) : new Thickness(0);
             HeaderActionsHost.ColumnDefinitions[0].Width = narrow ? star : auto;
             HeaderActionsHost.ColumnDefinitions[1].Width = narrow ? star : auto;
             ScheduleButton.HorizontalAlignment = narrow ? HorizontalAlignment.Stretch : HorizontalAlignment.Left;
@@ -346,19 +347,19 @@ namespace Shutdown_Scheduler_WinUI
             var titleBar = _appWindow.TitleBar;
             var isLightTheme = Root.ActualTheme == ElementTheme.Light;
 
-            var bg = ResolveThemeColor(
+            var bg = ThemeResources.ResolveColor(
                 "AppChromeBackgroundBrush",
                 isLightTheme ? Color.FromArgb(255, 244, 241, 235) : Color.FromArgb(255, 11, 11, 12));
-            var fg = ResolveThemeColor(
+            var fg = ThemeResources.ResolveColor(
                 "HeroValueBrush",
                 isLightTheme ? Color.FromArgb(255, 29, 31, 34) : Colors.White);
-            var muted = ResolveThemeColor(
+            var muted = ThemeResources.ResolveColor(
                 "MutedTextBrush",
                 isLightTheme ? Color.FromArgb(255, 117, 109, 100) : Color.FromArgb(255, 139, 134, 126));
-            var hover = ResolveThemeColor(
+            var hover = ThemeResources.ResolveColor(
                 "GlassPanelSecondaryBackgroundBrush",
                 isLightTheme ? Color.FromArgb(255, 249, 246, 240) : Color.FromArgb(255, 24, 25, 28));
-            var pressed = ResolveThemeColor(
+            var pressed = ThemeResources.ResolveColor(
                 "GlassPanelStrongBorderBrush",
                 isLightTheme ? Color.FromArgb(255, 130, 144, 161) : Color.FromArgb(255, 90, 100, 112));
 
@@ -397,37 +398,6 @@ namespace Shutdown_Scheduler_WinUI
             }
         }
 
-        private static Color ResolveThemeColor(string resourceKey, Color fallback)
-        {
-            if (TryResolveBrush(Application.Current.Resources, resourceKey, out var brush))
-            {
-                return brush.Color;
-            }
-
-            return fallback;
-        }
-
-        private static bool TryResolveBrush(ResourceDictionary dictionary, string resourceKey, out SolidColorBrush brush)
-        {
-            if (dictionary.TryGetValue(resourceKey, out var resource) &&
-                resource is SolidColorBrush directBrush)
-            {
-                brush = directBrush;
-                return true;
-            }
-
-            foreach (var mergedDictionary in dictionary.MergedDictionaries)
-            {
-                if (TryResolveBrush(mergedDictionary, resourceKey, out brush))
-                {
-                    return true;
-                }
-            }
-
-            brush = null!;
-            return false;
-        }
-
         private nint WindowSubclassProc(nint hWnd, uint message, nuint wParam, nint lParam, nuint subclassId, nuint referenceData)
         {
             if (message == NativeMethods.WmGetMinMaxInfo)
@@ -449,30 +419,12 @@ namespace Shutdown_Scheduler_WinUI
             return NativeMethods.DefSubclassProc(hWnd, message, wParam, lParam);
         }
 
-        private void OnTargetDateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        private void OnTargetDialChanged(object? sender, DateTime target)
         {
-            SyncViewModelFromPickers();
-        }
-
-        private void ApplyLocalDateFormat()
-        {
-            TargetDatePicker.DateFormat = DateTimeFormatter.ShortDate.Template;
-        }
-
-        private void OnRelativeMinutesValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
-        {
-            if (_syncingPickerValues || double.IsNaN(args.NewValue))
+            if (!_syncingPickerValues)
             {
-                return;
+                ViewModel.SelectedTargetDateTime = target;
             }
-
-            ViewModel.RelativeMinutes = Math.Max(1, args.NewValue).ToString(CultureInfo.CurrentCulture);
-            SyncPickersFromViewModel();
-        }
-
-        private void OnTargetTimeChanged(object sender, TimePickerValueChangedEventArgs args)
-        {
-            SyncViewModelFromPickers();
         }
 
         private async void OnRefreshCloseAppTargetsClick(object sender, RoutedEventArgs e)
@@ -484,15 +436,22 @@ namespace Shutdown_Scheduler_WinUI
         {
             var optionsPanel = new StackPanel
             {
-                MinWidth = 320,
+                MinWidth = 400,
                 Spacing = 8
             };
+            optionsPanel.Children.Add(new TextBlock
+            {
+                Text = _loc.T("ConditionsSectionHint"),
+                Style = (Style)Application.Current.Resources["SectionCaptionTextStyle"],
+                Margin = new Thickness(0, -4, 0, 8)
+            });
+
             var dialog = new ContentDialog
             {
                 Title = ViewModel.AddConditionDialogTitle,
                 Content = new ScrollViewer
                 {
-                    MaxHeight = 420,
+                    MaxHeight = 460,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                     Background = new SolidColorBrush(Colors.Transparent),
                     Content = optionsPanel
@@ -502,48 +461,93 @@ namespace Shutdown_Scheduler_WinUI
                 XamlRoot = Root.XamlRoot
             };
             AutomationProperties.SetName(dialog, ViewModel.AddConditionDialogTitle);
-            ApplyDialogColors(dialog);
+            ThemeResources.ApplyDialogStyle(dialog);
 
             AddConditionOption(
-                optionsPanel,
+                ConditionType.Network,
                 _loc.T("NetworkBelow"),
+                _loc.T("NetworkConditionHint"),
                 ViewModel.AddNetworkConditionCommand,
-                () => ViewModel.CanAddNetworkCondition);
+                ViewModel.CanAddNetworkCondition);
 
             AddConditionOption(
-                optionsPanel,
+                ConditionType.Cpu,
                 _loc.T("CpuBelow"),
+                _loc.T("CpuConditionHint"),
                 ViewModel.AddCpuConditionCommand,
-                () => ViewModel.CanAddCpuCondition);
+                ViewModel.CanAddCpuCondition);
 
             if (ViewModel.IsBatteryConditionAvailable)
             {
                 AddConditionOption(
-                    optionsPanel,
+                    ConditionType.Battery,
                     _loc.T("BatteryBelow"),
+                    _loc.T("BatteryConditionHint"),
                     ViewModel.AddBatteryConditionCommand,
-                    () => ViewModel.CanAddBatteryCondition);
+                    ViewModel.CanAddBatteryCondition);
             }
 
             AddConditionOption(
-                optionsPanel,
+                ConditionType.AppIdle,
                 _loc.T("AppIdleBelow"),
+                _loc.T("AppIdleConditionHint"),
                 ViewModel.AddAppIdleConditionCommand,
-                () => ViewModel.CanAddAppIdleCondition);
+                ViewModel.CanAddAppIdleCondition);
 
-            void AddConditionOption(StackPanel panel, string label, System.Windows.Input.ICommand command, Func<bool> isEnabled)
+            // One row per condition: icon tile, title and a short explanation. Conditions already added stay
+            // listed (dimmed, with an "Added" badge) so the list doesn't change shape between openings.
+            void AddConditionOption(ConditionType type, string label, string description, System.Windows.Input.ICommand command, bool canAdd)
             {
+                var resources = Application.Current.Resources;
+                var row = new Grid { ColumnSpacing = 14 };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                row.Children.Add(new Border
+                {
+                    Style = (Style)resources["SectionIconTileStyle"],
+                    Child = new FontIcon
+                    {
+                        Glyph = AppGlyphs.ForCondition(type),
+                        Style = (Style)resources["SectionIconStyle"]
+                    }
+                });
+
+                var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Spacing = 2 };
+                text.Children.Add(new TextBlock
+                {
+                    Text = label,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                    Style = (Style)resources["FormRowLabelStyle"]
+                });
+                text.Children.Add(new TextBlock
+                {
+                    Text = description,
+                    Style = (Style)resources["SectionCaptionTextStyle"],
+                    TextWrapping = TextWrapping.WrapWholeWords
+                });
+                Grid.SetColumn(text, 1);
+                row.Children.Add(text);
+
+                if (!canAdd)
+                {
+                    var badge = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
+                    badge.Children.Add(new FontIcon { Glyph = "\uE73E", FontSize = 12, Style = (Style)resources["SectionIconStyle"] });
+                    badge.Children.Add(new TextBlock { Text = _loc.T("ConditionAdded"), Style = (Style)resources["SectionCaptionTextStyle"] });
+                    Grid.SetColumn(badge, 2);
+                    row.Children.Add(badge);
+                }
+
                 var button = new Button
                 {
-                    Content = label,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    HorizontalContentAlignment = HorizontalAlignment.Left,
-                    MinHeight = 42,
-                    Padding = new Thickness(16, 10, 16, 10),
-                    IsEnabled = isEnabled()
+                    Content = row,
+                    IsEnabled = canAdd,
+                    Opacity = canAdd ? 1 : 0.6,
+                    Style = (Style)resources["DialogOptionButtonStyle"]
                 };
                 AutomationProperties.SetName(button, label);
-                ApplyDialogButtonColors(button);
+                AutomationProperties.SetHelpText(button, description);
 
                 button.Click += (_, _) =>
                 {
@@ -555,7 +559,7 @@ namespace Shutdown_Scheduler_WinUI
                     dialog.Hide();
                 };
 
-                panel.Children.Add(button);
+                optionsPanel.Children.Add(button);
             }
 
             await dialog.ShowAsync();
@@ -575,38 +579,12 @@ namespace Shutdown_Scheduler_WinUI
             _syncingPickerValues = true;
             try
             {
-                var target = ViewModel.SelectedTargetDateTime ?? DateTime.Now.AddMinutes(45);
-                TargetDatePicker.MinDate = new DateTimeOffset(DateTime.Today);
-                TargetDatePicker.MaxDate = new DateTimeOffset(DateTime.Today.AddDays(7));
-                TargetDatePicker.Date = new DateTimeOffset(target.Date);
-                TargetTimePicker.Time = target.TimeOfDay;
-
-                if (double.TryParse(ViewModel.RelativeMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes))
-                {
-                    RelativeMinutesNumberBox.Value = minutes;
-                }
+                TargetDial.Target = ViewModel.SelectedTargetDateTime ?? DateTime.Now.AddMinutes(45);
             }
             finally
             {
                 _syncingPickerValues = false;
             }
-        }
-
-        private void SyncViewModelFromPickers()
-        {
-            if (_syncingPickerValues)
-            {
-                return;
-            }
-
-            if (TargetDatePicker.Date is not { } selectedDate)
-            {
-                return;
-            }
-
-            var date = selectedDate.Date;
-            var time = TargetTimePicker.Time;
-            ViewModel.SelectedTargetDateTime = date + time;
         }
 
         private void OnSchedulerError(object? sender, string message)
@@ -622,7 +600,7 @@ namespace Shutdown_Scheduler_WinUI
                     XamlRoot = Root.XamlRoot
                 };
                 AutomationProperties.SetName(dialog, _loc.T("WarningTitle"));
-                ApplyDialogColors(dialog);
+                ThemeResources.ApplyDialogStyle(dialog);
 
                 await dialog.ShowAsync();
             });
@@ -644,7 +622,7 @@ namespace Shutdown_Scheduler_WinUI
                     XamlRoot = Root.XamlRoot
                 };
                 AutomationProperties.SetName(dialog, _loc.T("WarningTitle"));
-                ApplyDialogColors(dialog);
+                ThemeResources.ApplyDialogStyle(dialog);
 
                 var result = await dialog.ShowAsync();
                 if (result == ContentDialogResult.Primary)
@@ -656,43 +634,6 @@ namespace Shutdown_Scheduler_WinUI
                     _scheduler.Cancel();
                 }
             });
-        }
-
-        private static void ApplyDialogColors(ContentDialog dialog)
-        {
-            dialog.Background = ResolveThemeBrush("PopupBackgroundBrush", new SolidColorBrush(Color.FromArgb(255, 24, 25, 28)));
-            dialog.BorderBrush = ResolveThemeBrush("PopupBorderBrush", new SolidColorBrush(Color.FromArgb(255, 53, 57, 64)));
-            dialog.Foreground = ResolveThemeBrush("ControlForegroundBrush", new SolidColorBrush(Colors.White));
-            dialog.BorderThickness = new Thickness(1);
-        }
-
-        private static void ApplyDialogButtonColors(Button button)
-        {
-            var normalBackground = ResolveThemeBrush("PopupSelectedBrush", new SolidColorBrush(Color.FromArgb(255, 43, 49, 56)));
-            var hoverBackground = normalBackground;
-            var pressedBackground = ResolveThemeBrush("PopupPressedBrush", new SolidColorBrush(Color.FromArgb(255, 49, 56, 65)));
-            var borderBrush = ResolveThemeBrush("PopupBorderBrush", new SolidColorBrush(Color.FromArgb(255, 53, 57, 64)));
-            var foreground = ResolveThemeBrush("ControlForegroundBrush", new SolidColorBrush(Colors.White));
-
-            button.Background = normalBackground;
-            button.BorderBrush = borderBrush;
-            button.Foreground = foreground;
-            button.BorderThickness = new Thickness(1);
-            button.Resources["ButtonBackgroundPointerOver"] = hoverBackground;
-            button.Resources["ButtonBackgroundPressed"] = pressedBackground;
-            button.Resources["ButtonBackgroundDisabled"] = normalBackground;
-            button.Resources["ButtonBorderBrushPointerOver"] = borderBrush;
-            button.Resources["ButtonBorderBrushPressed"] = borderBrush;
-            button.Resources["ButtonBorderBrushDisabled"] = borderBrush;
-            button.Resources["ButtonForegroundPointerOver"] = foreground;
-            button.Resources["ButtonForegroundPressed"] = foreground;
-        }
-
-        private static Brush ResolveThemeBrush(string resourceKey, Brush fallback)
-        {
-            return TryResolveBrush(Application.Current.Resources, resourceKey, out var brush)
-                ? brush
-                : fallback;
         }
 
         private void OnCloseAppPickerSelectionChanged(object? sender, CloseAppPickerItem? item)

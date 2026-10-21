@@ -41,6 +41,9 @@ public sealed class MainViewModel : ObservableObject
     private string _activeSummary = string.Empty;
     private string _statusSummary = string.Empty;
     private string _remaining = "--:--:--";
+    private string _activeHeadline = string.Empty;
+    private string _activeDetail = string.Empty;
+    private string _activeGlyph = AppGlyphs.NoSchedule;
     private bool _hasActiveSchedule;
     private bool _updatingTimeParts;
     private DateTime? _selectedTargetDateTime;
@@ -360,6 +363,9 @@ public sealed class MainViewModel : ObservableObject
     public string ActiveSummary { get => _activeSummary; set => SetProperty(ref _activeSummary, value); }
     public string StatusSummary { get => _statusSummary; set => SetProperty(ref _statusSummary, value); }
     public string Remaining { get => _remaining; set => SetProperty(ref _remaining, value); }
+    public string ActiveHeadline { get => _activeHeadline; set => SetProperty(ref _activeHeadline, value); }
+    public string ActiveDetail { get => _activeDetail; set => SetProperty(ref _activeDetail, value); }
+    public string ActiveGlyph { get => _activeGlyph; set => SetProperty(ref _activeGlyph, value); }
 
     private void Schedule()
     {
@@ -500,7 +506,7 @@ public sealed class MainViewModel : ObservableObject
         if (BatteryConditionEnabled) parts.Add($"{_loc.T("BatteryShort")} < {batteryThresholdPercent:0.0}%");
         if (Conditions.FirstOrDefault(condition => condition.Type == ConditionType.AppIdle) is { SelectedAppTarget: { } idleApp } appIdle)
         {
-            parts.Add($"{idleApp.Label}: {_loc.T("AppIdleShort")} >= {appIdle.AppIdleMinutes} min");
+            parts.Add($"{idleApp.Label}: {_loc.T("AppIdleShort")} ≥ {appIdle.AppIdleMinutes} min");
         }
 
         return parts.Count == 0 ? _loc.T("NoConditions") : string.Join($" {_loc.T("And")} ", parts);
@@ -663,6 +669,9 @@ public sealed class MainViewModel : ObservableObject
             ActiveSummary = _loc.T("NoActiveSchedule");
             StatusSummary = string.Empty;
             Remaining = "--:--:--";
+            ActiveHeadline = _loc.T("NoScheduleTitle");
+            ActiveDetail = _loc.T("NoScheduleHint");
+            ActiveGlyph = AppGlyphs.NoSchedule;
             return;
         }
 
@@ -671,6 +680,12 @@ public sealed class MainViewModel : ObservableObject
         Remaining = RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
         ActiveSummary = $"{active.Request.DisplaySummary}\n{_loc.T("Mode")}: {_loc.ExecutionModeLabel(active.Request.ExecutionMode)}\n{_loc.T("Conditions")}: {active.Request.ConditionsSummary}";
         StatusSummary = $"{_loc.T("Status")}: {_loc.StatusLabel(active.Status)}\n{_loc.T("Remaining")}: {Remaining}\n{active.StatusDetails}";
+        ActiveHeadline = active.Request.DisplaySummary;
+        // While waiting, the reason (e.g. which condition is still pending) is more useful than the status name.
+        ActiveDetail = string.IsNullOrWhiteSpace(active.StatusDetails)
+            ? $"{_loc.StatusLabel(active.Status)} · {_loc.T("Conditions")}: {active.Request.ConditionsSummary}"
+            : active.StatusDetails;
+        ActiveGlyph = AppGlyphs.ForAction(active.Request.Action);
     }
 }
 
@@ -725,6 +740,7 @@ public sealed class ConditionEditorItem : ObservableObject
     public bool IsCpu => Type == ConditionType.Cpu;
     public bool IsBattery => Type == ConditionType.Battery;
     public bool IsAppIdle => Type == ConditionType.AppIdle;
+    public string Glyph => AppGlyphs.ForCondition(Type);
 
     // Keeps the chosen app selected across refreshes as long as it is still running.
     public void SetAppTargets(IEnumerable<AppTarget> apps)

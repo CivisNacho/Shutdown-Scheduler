@@ -27,11 +27,12 @@ This document walks through the current repo as a codebase, with the active WinU
 
 ### `MainWindow.xaml`
 - Defines the main WinUI screen.
-- Contains the hero header with remaining time, summary, schedule, and cancel buttons.
-- Contains the schedule section with action selection, forced-admin toggle, close-app picker, date/time inputs, and relative minutes input.
-- Contains the conditions section with network, CPU, and battery-style condition editors.
+- Contains the hero header: an action badge, the countdown (or an empty state when nothing is scheduled), the schedule headline and its current status or waiting reason, plus the schedule and cancel buttons.
+- Contains the schedule section with action selection, forced-admin toggle, close-app picker, and the `TargetTimeDial` clock that sets the target time.
+- Contains the conditions section: an empty-state hint or one card per condition (network, CPU, battery, app idle) with its own icon and remove button.
 - Contains the widget settings section.
 - Uses adaptive states (1100 / 760 DIP) so the layout goes from three columns to two or one; below the wide layout the sections scroll inside an outer `ScrollViewer` instead of being clipped.
+- Each section starts with an icon tile, title and one-line description; related fields are grouped with `FieldGroupStyle`.
 - Uses a custom app-target item template with icon loading feedback.
 
 ### `MainWindow.xaml.cs`
@@ -44,17 +45,15 @@ This document walks through the current repo as a codebase, with the active WinU
 - `OnRootActualThemeChanged(...)` reapplies title-bar colors when the theme changes.
 - `ApplyTitleBarTheme()` maps theme resources onto the WinUI title bar colors.
 - `ApplyWindowIcon()` loads small and large icon handles and sends them to the native window.
+- `OnAddConditionClick(...)` builds the add-condition dialog: one row per condition with icon, title and description; conditions already added stay listed, dimmed, with an Added badge.
 - `ResolveThemeColor(...)` looks up a theme brush and returns its color.
 - `TryResolveBrush(...)` recursively searches merged dictionaries for a brush resource.
 - `WindowSubclassProc(...)` enforces the minimum DIP size via `WM_GETMINMAXINFO` and applies the suggested rect on `WM_DPICHANGED`.
-- `OnTargetDateChanged(...)` pushes picker changes back into the view model.
-- `OnRelativeMinutesValueChanged(...)` updates the relative-minute value in the view model and resyncs the UI.
-- `OnTargetTimeChanged(...)` pushes time-picker changes back into the view model.
+- `OnTargetDialChanged(...)` pushes the clock's target time into `SelectedTargetDateTime`.
 - `OnRefreshCloseAppTargetsClick(...)` refreshes the list of running apps.
 - `OnAddConditionClick(...)` opens the add-condition dialog and wires its buttons.
 - `OnRemoveConditionClick(...)` removes a condition item from the view model.
-- `SyncPickersFromViewModel()` copies the selected target time and relative minutes into the visible controls.
-- `SyncViewModelFromPickers()` copies date/time picker changes back into `SelectedTargetDateTime`.
+- `SyncPickersFromViewModel()` copies the selected target time into the clock.
 - `OnSchedulerError(...)` shows an error dialog for scheduler failures.
 - `OnWarningDue(...)` shows the pre-execution warning dialog and calls postpone or cancel based on the response.
 - `ApplyDialogColors(...)` styles WinUI dialogs to match the app theme.
@@ -456,6 +455,19 @@ This document walks through the current repo as a codebase, with the active WinU
 - `Start()` starts the timer.
 - `Stop()` stops the timer.
 - `IAppTimerFactory.Create(...)` creates a timer instance for a given interval.
+
+### `Controls/TargetTimeDial.xaml` / `.xaml.cs`
+- A 12-hour clock face for the target time: a "now" hand, an arc from now to the target and a draggable knob (5-minute steps, continuing past 12 o'clock into the next half-day), with the time, "in 1 h 30 min" and the day in the centre.
+- Preset chips set "now + 15 min / 30 min / 1 h / 2 h"; day chips (today, tomorrow, two more) and a calendar flyout move the date within the 7-day window.
+- Arrow keys move ±1 min, PageUp/PageDown ±15, the wheel ±5. An automation peer exposes it as a slider over minutes from now.
+- A target that slips into the past is not moved silently; the readout says so and scheduling validation rejects it.
+
+### `Services/ThemeResources.cs`
+- `ResolveColor(...)` / `ResolveBrush(...)` read CalmGlass theme brushes from code (title bar colors).
+- `ApplyDialogStyle(...)` gives every `ContentDialog` the palette background and button styles, and drops `DefaultButton` so no button falls back to the system accent.
+
+### `ShutdownScheduler.Core/Models/AppGlyphs.cs`
+- Holds the Segoe Fluent glyphs for each action and condition type, shared by the main window and the widget.
 
 ### `ShutdownScheduler.Core/Persistence/WidgetSettingsStore.cs`
 - `Load()` reads widget settings from `%LOCALAPPDATA%/ShutdownScheduler/widget-settings.json`.
