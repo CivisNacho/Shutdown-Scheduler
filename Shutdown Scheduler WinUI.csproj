@@ -86,7 +86,8 @@
   <PropertyGroup>
     <!-- Only enable publish-time optimizations during publish/package, not regular builds. -->
     <PublishReadyToRun Condition="'$(IsPublish)'=='true' and '$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(IsPublish)'=='true' and '$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!-- Trimming breaks WinUI/XAML reflection: the packaged app crashes on startup. -->
+    <PublishTrimmed>False</PublishTrimmed>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
