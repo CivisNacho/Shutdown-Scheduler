@@ -46,6 +46,7 @@ public sealed class MainViewModel : ObservableObject
     private DateTime? _selectedTargetDateTime;
     private string _selectedAppProcessName = string.Empty;
     private string _selectedAppLabel = string.Empty;
+    private IReadOnlyList<AppTarget> _runningApps = Array.Empty<AppTarget>();
 
     public MainViewModel(
         SchedulingService scheduler,
@@ -105,6 +106,7 @@ public sealed class MainViewModel : ObservableObject
         AddBatteryConditionCommand = new RelayCommand(
             _ => AddCondition(ConditionType.Battery),
             _ => IsBatteryConditionAvailable && !HasCondition(ConditionType.Battery));
+        AddAppIdleConditionCommand = new RelayCommand(_ => AddCondition(ConditionType.AppIdle), _ => !HasCondition(ConditionType.AppIdle));
         RemoveConditionCommand = new RelayCommand(condition =>
         {
             if (condition is ConditionEditorItem item)
@@ -137,6 +139,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand AddNetworkConditionCommand { get; }
     public ICommand AddCpuConditionCommand { get; }
     public ICommand AddBatteryConditionCommand { get; }
+    public ICommand AddAppIdleConditionCommand { get; }
     public ICommand RemoveConditionCommand { get; }
 
     public string AppTitle => _loc.T("AppTitle");
@@ -328,6 +331,7 @@ public sealed class MainViewModel : ObservableObject
     public bool CanAddNetworkCondition => !HasCondition(ConditionType.Network);
     public bool CanAddCpuCondition => !HasCondition(ConditionType.Cpu);
     public bool CanAddBatteryCondition => IsBatteryConditionAvailable && !HasCondition(ConditionType.Battery);
+    public bool CanAddAppIdleCondition => !HasCondition(ConditionType.AppIdle);
     public bool IsBatteryConditionAvailable => _battery.IsBatteryAvailable;
     public bool HasConditions => Conditions.Count > 0;
     public bool HasNoConditions => !HasConditions;
@@ -441,6 +445,20 @@ public sealed class MainViewModel : ObservableObject
             }
         }
 
+        var appIdleCondition = Conditions.FirstOrDefault(condition => condition.Type == ConditionType.AppIdle);
+        if (appIdleCondition is not null)
+        {
+            if (appIdleCondition.SelectedAppTarget is null)
+            {
+                return Fail(_loc.T("ValidationAppIdleApp"), out request, out error);
+            }
+
+            if (!double.TryParse(appIdleCondition.AppIdleMinutes, out var idleMinutes) || idleMinutes < 1 || idleMinutes > 1440)
+            {
+                return Fail(_loc.T("ValidationAppIdleMinutes"), out request, out error);
+            }
+        }
+
         var thresholdBytes = NetworkConditionEnabled
             ? double.Parse(networkCondition!.NetworkThreshold) * (networkCondition.SelectedNetworkUnit.Value == NetworkUnit.Mbs ? 1024 * 1024 : 1024)
             : 0;
@@ -461,6 +479,10 @@ public sealed class MainViewModel : ObservableObject
             CpuThresholdPercent = CpuConditionEnabled ? double.Parse(cpuCondition!.CpuThreshold) : 0,
             BatteryConditionEnabled = BatteryConditionEnabled,
             BatteryThresholdPercent = batteryThresholdPercent,
+            AppIdleConditionEnabled = appIdleCondition is not null,
+            AppIdleProcessName = appIdleCondition?.SelectedAppTarget?.ProcessName ?? string.Empty,
+            AppIdleProcessLabel = appIdleCondition?.SelectedAppTarget?.Label ?? string.Empty,
+            AppIdleMinutes = appIdleCondition is not null ? double.Parse(appIdleCondition.AppIdleMinutes) : 0,
             TargetProcessName = _selectedAppProcessName,
             TargetProcessLabel = _selectedAppLabel,
             DisplaySummary = BuildDisplaySummary(target),
@@ -476,6 +498,11 @@ public sealed class MainViewModel : ObservableObject
         if (NetworkConditionEnabled) parts.Add($"{_loc.T("NetworkShort")} < {ConditionEvaluationService.FormatBytes(thresholdBytes)}");
         if (CpuConditionEnabled) parts.Add($"{_loc.T("CpuShort")} < {Conditions.First(condition => condition.Type == ConditionType.Cpu).CpuThreshold}%");
         if (BatteryConditionEnabled) parts.Add($"{_loc.T("BatteryShort")} < {batteryThresholdPercent:0.0}%");
+        if (Conditions.FirstOrDefault(condition => condition.Type == ConditionType.AppIdle) is { SelectedAppTarget: { } idleApp } appIdle)
+        {
+            parts.Add($"{idleApp.Label}: {_loc.T("AppIdleShort")} >= {appIdle.AppIdleMinutes} min");
+        }
+
         return parts.Count == 0 ? _loc.T("NoConditions") : string.Join($" {_loc.T("And")} ", parts);
     }
 
@@ -498,7 +525,13 @@ public sealed class MainViewModel : ObservableObject
 
         if (HasCondition(type)) return;
 
-        Conditions.Add(new ConditionEditorItem(type, GetConditionLabel(type), _loc, NetworkUnits));
+        var item = new ConditionEditorItem(type, GetConditionLabel(type), _loc, NetworkUnits);
+        if (type == ConditionType.AppIdle)
+        {
+            item.SetAppTargets(_runningApps);
+        }
+
+        Conditions.Add(item);
         SyncConditionFlags();
         RefreshConditionState();
     }
@@ -518,6 +551,7 @@ public sealed class MainViewModel : ObservableObject
             ConditionType.Network => _loc.T("NetworkBelow"),
             ConditionType.Cpu => _loc.T("CpuBelow"),
             ConditionType.Battery => _loc.T("BatteryBelow"),
+            ConditionType.AppIdle => _loc.T("AppIdleBelow"),
             _ => _loc.T("AddCondition")
         };
 
@@ -533,12 +567,14 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanAddNetworkCondition));
         OnPropertyChanged(nameof(CanAddCpuCondition));
         OnPropertyChanged(nameof(CanAddBatteryCondition));
+        OnPropertyChanged(nameof(CanAddAppIdleCondition));
         OnPropertyChanged(nameof(IsBatteryConditionAvailable));
         OnPropertyChanged(nameof(HasConditions));
         OnPropertyChanged(nameof(HasNoConditions));
         (AddNetworkConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddCpuConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddBatteryConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddAppIdleConditionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     private static bool Fail(string message, out ScheduleRequest request, out string error)
@@ -566,6 +602,16 @@ public sealed class MainViewModel : ObservableObject
     {
         _selectedAppProcessName = target?.ProcessName ?? string.Empty;
         _selectedAppLabel = target?.Label ?? string.Empty;
+    }
+
+    // The running-app list is discovered by the window; app-idle conditions pick their target from it.
+    public void SetRunningApps(IReadOnlyList<AppTarget> apps)
+    {
+        _runningApps = apps;
+        foreach (var condition in Conditions.Where(condition => condition.Type == ConditionType.AppIdle))
+        {
+            condition.SetAppTargets(apps);
+        }
     }
 
     private void ApplyRelativeMinutesToTarget()
@@ -633,6 +679,8 @@ public sealed class ConditionEditorItem : ObservableObject
     private string _networkThreshold = "500";
     private string _cpuThreshold = "20";
     private string _batteryThreshold = "20";
+    private string _appIdleMinutes = "5";
+    private AppTarget? _selectedAppTarget;
     private OptionItem<NetworkUnit> _selectedNetworkUnit;
 
     public ConditionEditorItem(
@@ -647,6 +695,9 @@ public sealed class ConditionEditorItem : ObservableObject
         NetworkShortLabel = loc.T("NetworkShort");
         CpuShortLabel = loc.T("CpuShort");
         BatteryShortLabel = loc.T("BatteryShort");
+        AppIdleAppLabel = loc.T("AppIdleApp");
+        AppIdleMinutesLabel = loc.T("AppIdleMinutes");
+        RefreshAppsLabel = loc.T("RefreshApps");
         RemoveConditionLabel = loc.T("RemoveCondition");
         NetworkUnits = new ObservableCollection<OptionItem<NetworkUnit>>(networkUnits);
         _selectedNetworkUnit = NetworkUnits[0];
@@ -658,13 +709,34 @@ public sealed class ConditionEditorItem : ObservableObject
     public string NetworkShortLabel { get; }
     public string CpuShortLabel { get; }
     public string BatteryShortLabel { get; }
+    public string AppIdleAppLabel { get; }
+    public string AppIdleMinutesLabel { get; }
+    public string RefreshAppsLabel { get; }
     public string RemoveConditionLabel { get; }
     public ObservableCollection<OptionItem<NetworkUnit>> NetworkUnits { get; }
     public OptionItem<NetworkUnit> SelectedNetworkUnit { get => _selectedNetworkUnit; set => SetProperty(ref _selectedNetworkUnit, value); }
     public string NetworkThreshold { get => _networkThreshold; set => SetProperty(ref _networkThreshold, value); }
     public string CpuThreshold { get => _cpuThreshold; set => SetProperty(ref _cpuThreshold, value); }
     public string BatteryThreshold { get => _batteryThreshold; set => SetProperty(ref _batteryThreshold, value); }
+    public string AppIdleMinutes { get => _appIdleMinutes; set => SetProperty(ref _appIdleMinutes, value); }
+    public ObservableCollection<AppTarget> AppTargets { get; } = new();
+    public AppTarget? SelectedAppTarget { get => _selectedAppTarget; set => SetProperty(ref _selectedAppTarget, value); }
     public bool IsNetwork => Type == ConditionType.Network;
     public bool IsCpu => Type == ConditionType.Cpu;
     public bool IsBattery => Type == ConditionType.Battery;
+    public bool IsAppIdle => Type == ConditionType.AppIdle;
+
+    // Keeps the chosen app selected across refreshes as long as it is still running.
+    public void SetAppTargets(IEnumerable<AppTarget> apps)
+    {
+        var selectedProcessName = SelectedAppTarget?.ProcessName;
+        AppTargets.Clear();
+        foreach (var app in apps)
+        {
+            AppTargets.Add(app);
+        }
+
+        SelectedAppTarget = AppTargets.FirstOrDefault(app =>
+            string.Equals(app.ProcessName, selectedProcessName, StringComparison.OrdinalIgnoreCase));
+    }
 }

@@ -276,7 +276,7 @@ public sealed class NetworkMonitorService
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetProcessIoCounters(IntPtr hProcess, out IoCounters ioCounters);
 
-    private static bool TryGetIoCounters(IntPtr processHandle, out IoCounters ioCounters)
+    internal static bool TryGetIoCounters(IntPtr processHandle, out IoCounters ioCounters)
     {
         try
         {
@@ -290,7 +290,7 @@ public sealed class NetworkMonitorService
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct IoCounters
+    internal struct IoCounters
     {
         public ulong ReadOperationCount;
         public ulong WriteOperationCount;
@@ -298,6 +298,210 @@ public sealed class NetworkMonitorService
         public ulong ReadTransferCount;
         public ulong WriteTransferCount;
         public ulong OtherTransferCount;
+    }
+}
+
+// Watches one app (every process with the given name) on a background timer and tracks since when it has been idle.
+// Sampling starts with the schedule, so idle time before the target time already counts.
+public sealed class AppIdleMonitor : IDisposable
+{
+    // Below all three averages the app counts as idle. I/O covers network and disk together:
+    // Windows exposes no per-process network counter without kernel tracing.
+    private const double CpuIdlePercent = 2;
+    private const double IoIdleBytesPerSecond = 50 * 1024;
+    private const double GpuIdlePercent = 3;
+    private static readonly TimeSpan SampleInterval = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan SmoothingWindow = TimeSpan.FromSeconds(10);
+
+    private readonly object _gate = new();
+    private readonly Queue<(DateTime Time, double Cpu, double Io, double Gpu)> _window = new();
+    private readonly Dictionary<int, (TimeSpan Cpu, ulong Io)> _previousProcesses = new();
+    private Dictionary<string, CounterSample> _previousGpu = new();
+    private Timer? _timer;
+    private string _processName = string.Empty;
+    private DateTime _previousTime;
+    private DateTime? _idleSince;
+    private bool _gpuAvailable = true;
+    private int _sampling;
+    private AppActivitySnapshot _current = AppActivitySnapshot.Unknown;
+
+    public AppActivitySnapshot Current
+    {
+        get
+        {
+            lock (_gate) return _current;
+        }
+    }
+
+    public void Start(string processName)
+    {
+        lock (_gate)
+        {
+            StopCore();
+            _processName = processName;
+            _timer = new Timer(_ => Sample(), null, TimeSpan.Zero, SampleInterval);
+        }
+    }
+
+    public void Stop()
+    {
+        lock (_gate) StopCore();
+    }
+
+    public void Dispose() => Stop();
+
+    private void StopCore()
+    {
+        _timer?.Dispose();
+        _timer = null;
+        _window.Clear();
+        _previousProcesses.Clear();
+        _previousGpu = new();
+        _previousTime = default;
+        _idleSince = null;
+        _current = AppActivitySnapshot.Unknown;
+    }
+
+    private void Sample()
+    {
+        // A slow sample (the GPU category can take a while) must not overlap the next tick.
+        if (Interlocked.Exchange(ref _sampling, 1) == 1) return;
+        try
+        {
+            string processName;
+            lock (_gate)
+            {
+                if (_timer is null) return;
+                processName = _processName;
+            }
+
+            var now = DateTime.UtcNow;
+            var processes = Process.GetProcessesByName(processName);
+            var readable = new Dictionary<int, (TimeSpan Cpu, ulong Io)>();
+            foreach (var process in processes)
+            {
+                try
+                {
+                    if (!process.HasExited && NetworkMonitorService.TryGetIoCounters(process.Handle, out var io))
+                    {
+                        readable[process.Id] = (process.TotalProcessorTime, io.ReadTransferCount + io.WriteTransferCount + io.OtherTransferCount);
+                    }
+                }
+                catch
+                {
+                    // Access denied (elevated app) or the process just exited.
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+
+            var gpuPercent = SampleGpu(readable.Keys.ToHashSet());
+            lock (_gate)
+            {
+                if (_timer is null) return;
+                _current = Update(now, processes.Length > 0, readable, gpuPercent);
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _sampling, 0);
+        }
+    }
+
+    private AppActivitySnapshot Update(DateTime now, bool isRunning, Dictionary<int, (TimeSpan Cpu, ulong Io)> readable, double gpuPercent)
+    {
+        if (!isRunning)
+        {
+            // A closed app has nothing left to do, so it counts as idle from the moment it disappears.
+            _previousProcesses.Clear();
+            _window.Clear();
+            _idleSince ??= now;
+            return new AppActivitySnapshot(false, true, 0, 0, 0, _idleSince);
+        }
+
+        if (readable.Count == 0)
+        {
+            _idleSince = null;
+            return new AppActivitySnapshot(true, false, 0, 0, 0, null);
+        }
+
+        var hasPrevious = _previousTime != default;
+        var elapsed = Math.Max((now - _previousTime).TotalSeconds, 0.1);
+        double cpuSeconds = 0;
+        double ioBytes = 0;
+        foreach (var (processId, sample) in readable)
+        {
+            if (_previousProcesses.TryGetValue(processId, out var previous))
+            {
+                cpuSeconds += Math.Max(0, (sample.Cpu - previous.Cpu).TotalSeconds);
+                ioBytes += sample.Io >= previous.Io ? sample.Io - previous.Io : 0;
+            }
+        }
+
+        _previousProcesses.Clear();
+        foreach (var (processId, sample) in readable) _previousProcesses[processId] = sample;
+        _previousTime = now;
+        if (!hasPrevious)
+        {
+            return _current with { IsRunning = true, IsReadable = true };
+        }
+
+        _window.Enqueue((now, cpuSeconds / (elapsed * Environment.ProcessorCount) * 100, ioBytes / elapsed, gpuPercent));
+        while (now - _window.Peek().Time > SmoothingWindow) _window.Dequeue();
+
+        var cpu = _window.Average(sample => sample.Cpu);
+        var ioRate = _window.Average(sample => sample.Io);
+        var gpu = _window.Average(sample => sample.Gpu);
+        var isIdle = cpu < CpuIdlePercent && ioRate < IoIdleBytesPerSecond && gpu < GpuIdlePercent;
+        _idleSince = isIdle ? _idleSince ?? now : null;
+        return new AppActivitySnapshot(true, true, cpu, ioRate, gpu, _idleSince);
+    }
+
+    // Per-process GPU use as Task Manager shows it: utilization summed per engine type, highest engine type wins.
+    private double SampleGpu(HashSet<int> processIds)
+    {
+        if (!_gpuAvailable || processIds.Count == 0) return 0;
+        try
+        {
+            var utilization = new PerformanceCounterCategory("GPU Engine").ReadCategory()["Utilization Percentage"];
+            if (utilization is null) return 0;
+
+            var current = new Dictionary<string, CounterSample>();
+            var perEngineType = new Dictionary<string, double>();
+            foreach (InstanceData instance in utilization.Values)
+            {
+                // Instance names look like "pid_1234_luid_0x..._phys_0_eng_0_engtype_3D".
+                var name = instance.InstanceName;
+                if (!TryParseProcessId(name, out var processId) || !processIds.Contains(processId)) continue;
+
+                current[name] = instance.Sample;
+                if (_previousGpu.TryGetValue(name, out var previous))
+                {
+                    var engineTypeStart = name.LastIndexOf("engtype_", StringComparison.Ordinal);
+                    var engineType = engineTypeStart >= 0 ? name[(engineTypeStart + 8)..] : name;
+                    perEngineType[engineType] = perEngineType.GetValueOrDefault(engineType) + CounterSample.Calculate(previous, instance.Sample);
+                }
+            }
+
+            _previousGpu = current;
+            return perEngineType.Count == 0 ? 0 : Math.Clamp(perEngineType.Values.Max(), 0, 100);
+        }
+        catch
+        {
+            // No GPU counters on this machine (old drivers, some VMs): judge idleness by CPU and I/O only.
+            _gpuAvailable = false;
+            return 0;
+        }
+    }
+
+    private static bool TryParseProcessId(string instanceName, out int processId)
+    {
+        processId = 0;
+        if (!instanceName.StartsWith("pid_", StringComparison.Ordinal)) return false;
+        var end = instanceName.IndexOf('_', 4);
+        return end > 4 && int.TryParse(instanceName.AsSpan(4, end - 4), out processId);
     }
 }
 
@@ -355,19 +559,36 @@ public sealed class ConditionEvaluationService
     private readonly CpuMonitorService _cpu;
     private readonly NetworkMonitorService _network;
     private readonly BatteryMonitorService _battery;
+    private readonly AppIdleMonitor _appIdle;
     private readonly LocalizationService _loc;
 
     public ConditionEvaluationService(
         CpuMonitorService cpu,
         NetworkMonitorService network,
         BatteryMonitorService battery,
+        AppIdleMonitor appIdle,
         LocalizationService loc)
     {
         _cpu = cpu;
         _network = network;
         _battery = battery;
+        _appIdle = appIdle;
         _loc = loc;
     }
+
+    public void BeginSchedule(Models.ScheduleRequest request)
+    {
+        if (request.AppIdleConditionEnabled)
+        {
+            _appIdle.Start(request.AppIdleProcessName);
+        }
+        else
+        {
+            _appIdle.Stop();
+        }
+    }
+
+    public void EndSchedule() => _appIdle.Stop();
 
     public ConditionEvaluationResult Evaluate(Models.ScheduleRequest request)
     {
@@ -433,6 +654,18 @@ public sealed class ConditionEvaluationService
             }
         }
 
+        if (request.AppIdleConditionEnabled && GetAppIdleWaitMessage(request) is { } appIdleMessage)
+        {
+            return new ConditionEvaluationResult
+            {
+                IsSatisfied = false,
+                CpuAverage = cpuAverage,
+                NetworkAverageBytesPerSecond = networkAverage,
+                BatteryPercent = batteryPercent,
+                Message = appIdleMessage
+            };
+        }
+
         return new ConditionEvaluationResult
         {
             IsSatisfied = true,
@@ -440,6 +673,29 @@ public sealed class ConditionEvaluationService
             NetworkAverageBytesPerSecond = networkAverage,
             BatteryPercent = batteryPercent
         };
+    }
+
+    // Null when the app has been idle (or closed) for the required time.
+    private string? GetAppIdleWaitMessage(Models.ScheduleRequest request)
+    {
+        var activity = _appIdle.Current;
+        var label = string.IsNullOrWhiteSpace(request.AppIdleProcessLabel) ? request.AppIdleProcessName : request.AppIdleProcessLabel;
+        if (!activity.IsReadable)
+        {
+            return string.Format(_loc.T("AppIdleUnreadable"), label);
+        }
+
+        if (activity.IdleSinceUtc is not { } idleSince)
+        {
+            var usage = $"CPU {activity.CpuPercent:0.0}%, {_loc.T("IoShort")} {FormatBytes(activity.IoBytesPerSecond)}, GPU {activity.GpuPercent:0}%";
+            return string.Format(_loc.T("AppIdleWaitingActive"), label, usage);
+        }
+
+        var idleFor = DateTime.UtcNow - idleSince;
+        var required = TimeSpan.FromMinutes(request.AppIdleMinutes);
+        return idleFor >= required
+            ? null
+            : string.Format(_loc.T("AppIdleWaitingCounting"), label, RemainingTimeFormatter.FormatHoursMinutesSeconds(idleFor), request.AppIdleMinutes);
     }
 
     public static string FormatBytes(double bytesPerSecond)

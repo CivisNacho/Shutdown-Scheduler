@@ -17,6 +17,7 @@ public sealed class AppSession : IDisposable
     private readonly RunningAppDiscoveryService _runningApps;
     private readonly CpuMonitorService _cpu;
     private readonly BatteryMonitorService _battery;
+    private readonly AppIdleMonitor _appIdle;
     private readonly SchedulingService _scheduler;
     private readonly WinUiWidgetService _widget;
     private readonly WinUiTrayService _tray;
@@ -34,7 +35,8 @@ public sealed class AppSession : IDisposable
         _cpu = new CpuMonitorService();
         _battery = new BatteryMonitorService();
         var network = new NetworkMonitorService();
-        var conditions = new ConditionEvaluationService(_cpu, network, _battery, _localization);
+        _appIdle = new AppIdleMonitor();
+        var conditions = new ConditionEvaluationService(_cpu, network, _battery, _appIdle, _localization);
         var executor = new ActionExecutionService();
         _scheduler = new SchedulingService(
             conditions,
@@ -52,6 +54,11 @@ public sealed class AppSession : IDisposable
 
         var notifications = new WinUiUserNotificationService(() => _mainWindow?.Content.XamlRoot, dispatcherQueue);
         _viewModel = new MainViewModel(_scheduler, _widget, _localization, notifications, _battery);
+
+        if (ElevationService.StartedForForcedAdmin && _viewModel.IsForcedModeAvailable)
+        {
+            _viewModel.IsForcedAdmin = true;
+        }
 
         _scheduler.ScheduleChanged += OnScheduleChanged;
         _scheduler.Tick += OnSchedulerTick;
@@ -124,6 +131,7 @@ public sealed class AppSession : IDisposable
         _widget.Dispose();
         _tray.Dispose();
         _cpu.Dispose();
+        _appIdle.Dispose();
     }
 
     private void OnMainWindowClosed(object sender, WindowEventArgs args)

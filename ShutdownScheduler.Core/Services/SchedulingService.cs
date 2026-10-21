@@ -29,6 +29,7 @@ public sealed class SchedulingService
     public void Schedule(ScheduleRequest request)
     {
         ActiveSchedule = new ActiveSchedule(request);
+        _conditions.BeginSchedule(request);
         _lastTick = DateTime.Now;
         _timer.Start();
         ScheduleChanged?.Invoke(this, EventArgs.Empty);
@@ -42,6 +43,7 @@ public sealed class SchedulingService
         }
 
         ActiveSchedule = null;
+        _conditions.EndSchedule();
         _timer.Stop();
         ScheduleChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -73,6 +75,7 @@ public sealed class SchedulingService
             ActiveSchedule.Status = ScheduleStatus.Expired;
             ActiveSchedule.StatusDetails = _loc.T("ExpiredMessage");
             ActiveSchedule = null;
+            _conditions.EndSchedule();
             _timer.Stop();
             ScheduleChanged?.Invoke(this, EventArgs.Empty);
             Error?.Invoke(this, _loc.T("ExpiredMessage"));
@@ -117,6 +120,7 @@ public sealed class SchedulingService
         else
         {
             ActiveSchedule = null;
+            _conditions.EndSchedule();
             _timer.Stop();
             ScheduleChanged?.Invoke(this, EventArgs.Empty);
         }

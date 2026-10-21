@@ -9,7 +9,7 @@ This document walks through the current repo as a codebase, with the active WinU
 - `MainWindow` is the main control surface for scheduling.
 - `SchedulingService` owns the countdown loop and action execution timing.
 - `MainViewModel` holds most of the user-facing state and validation.
-- `MetricServices.cs` contains the CPU, network, battery, and condition-evaluation logic.
+- `MetricServices.cs` contains the CPU, network, battery, app-idle, and condition-evaluation logic.
 - `Persistence` stores the widget settings and the app-exclusion list for close-app detection.
 
 ## Active WinUI Shell
@@ -31,22 +31,22 @@ This document walks through the current repo as a codebase, with the active WinU
 - Contains the schedule section with action selection, forced-admin toggle, close-app picker, date/time inputs, and relative minutes input.
 - Contains the conditions section with network, CPU, and battery-style condition editors.
 - Contains the widget settings section.
-- Uses adaptive states so the layout compresses from three columns to one column.
+- Uses adaptive states (1100 / 760 DIP) so the layout goes from three columns to two or one; below the wide layout the sections scroll inside an outer `ScrollViewer` instead of being clipped.
 - Uses a custom app-target item template with icon loading feedback.
 
 ### `MainWindow.xaml.cs`
 - `MainWindow(...)` wires the view model, scheduler, localization, session, app discovery, and icon cache.
 - `OnLoaded(...)` syncs picker values, applies title-bar styling, and warms the close-app picker once.
-- `ConfigureWindowSize()` locks the window to a fixed size, removes maximize, hooks close behavior, and installs the subclass proc.
+- `ConfigureWindowSize()` makes the window resizable and maximizable, hooks close behavior, installs the subclass proc, and restores the saved placement or applies the default DIP size centered on screen.
 - `OnClosed(...)` detaches events, cancels background work, disposes resources, and destroys icon handles.
-- `OnAppWindowClosing(...)` routes close-to-tray behavior when there is an active schedule.
+- `OnAppWindowClosing(...)` saves the window placement and routes close-to-tray behavior when there is an active schedule.
 - `BringToForeground()` forces the window to the front.
 - `OnRootActualThemeChanged(...)` reapplies title-bar colors when the theme changes.
 - `ApplyTitleBarTheme()` maps theme resources onto the WinUI title bar colors.
 - `ApplyWindowIcon()` loads small and large icon handles and sends them to the native window.
 - `ResolveThemeColor(...)` looks up a theme brush and returns its color.
 - `TryResolveBrush(...)` recursively searches merged dictionaries for a brush resource.
-- `WindowSubclassProc(...)` clamps the window size by handling `WM_GETMINMAXINFO`.
+- `WindowSubclassProc(...)` enforces the minimum DIP size via `WM_GETMINMAXINFO` and applies the suggested rect on `WM_DPICHANGED`.
 - `OnTargetDateChanged(...)` pushes picker changes back into the view model.
 - `OnRelativeMinutesValueChanged(...)` updates the relative-minute value in the view model and resyncs the UI.
 - `OnTargetTimeChanged(...)` pushes time-picker changes back into the view model.
@@ -66,8 +66,8 @@ This document walks through the current repo as a codebase, with the active WinU
 - `LoadIconAsync(...)` loads a single icon and pushes it to the UI thread.
 - `RunOnUiThreadAsync(...)` marshals async UI updates through `DispatcherQueue`.
 - `FindBestSelection(...)` tries to preserve the previously selected app after refresh.
-- `NativeMethods.RemoveMaximizeButton(...)` strips the maximize box from the window style.
-- `NativeMethods.SetWindowSubclass(...)`, `RemoveWindowSubclass(...)`, `DefSubclassProc(...)`, `GetWindowLongPtr(...)`, `SetWindowLongPtr(...)`, `SetWindowPos(...)`, `SetForegroundWindow(...)`, and `SendMessage(...)` provide the native window interop.
+- `NativeMethods.TryGetRestoredBounds(...)` reads the restored (non-maximized) rect, and `GetDpiForWindow(...)` gives the scale used to convert DIPs to pixels.
+- `NativeMethods.SetWindowSubclass(...)`, `RemoveWindowSubclass(...)`, `DefSubclassProc(...)`, `SetWindowPos(...)`, `SetForegroundWindow(...)`, and `SendMessage(...)` provide the native window interop.
 
 ### `Views/WidgetWindow.xaml`
 - Defines the small floating status widget.
@@ -77,10 +77,10 @@ This document walks through the current repo as a codebase, with the active WinU
 ### `Views/WidgetWindow.xaml.cs`
 - `WidgetWindow()` initializes the window and applies the app-window configuration.
 - `ApplySettings(...)` resizes the widget, updates padding and font sizes, and re-anchors it.
-- `SetScheduleText(...)` updates the visible action text, time text, and condition icons.
+- `SetScheduleText(...)` updates the action text and icon, time text, and condition chips.
 - `ShowWidget()` shows the window without activating it.
 - `HideWidget()` hides the window.
-- `ConfigureAppWindow()` turns the window into a borderless always-on-top tool window and removes it from the taskbar.
+- `ConfigureAppWindow()` turns the window into a borderless always-on-top tool window, removes it from the taskbar, and lets DWM round and outline it.
 - `MoveToAnchor(...)` positions the widget based on the selected anchor and screen work area.
 - `GetSize(...)` returns the pixel size for each widget preset.
 - `NativeMethods.HideFromTaskbar(...)` changes the extended window style so the widget behaves like a tool window.
@@ -433,10 +433,13 @@ This document walks through the current repo as a codebase, with the active WinU
 - `ProcessNetworkSampler(...)` tracks per-process I/O counters.
 - `ProcessNetworkSampler.SampleAverageBytesPerSecond()` calculates a rolling per-process byte-rate estimate.
 - `ProcessNetworkSampler.AddSample(...)` keeps the rolling per-process network sample window trimmed.
+- `AppIdleMonitor.Start(...)` / `Stop()` sample one app's processes every 2 seconds on a background timer (CPU, I/O via `GetProcessIoCounters`, GPU via the `GPU Engine` counters) and track since when it has been idle; a closed app counts as idle, an unreadable (elevated) one never does.
+- `AppIdleMonitor.Current` returns the latest `AppActivitySnapshot`.
 - `BatteryMonitorService.IsBatteryAvailable` reports whether battery data can be read.
 - `TryGetBatteryPercentage(...)` reads the current battery percentage through `GetSystemPowerStatus`.
 - `ConditionEvaluationService(...)` wires together the monitor services and localization.
-- `Evaluate(...)` checks the current request against CPU, network, and battery thresholds and returns a message if conditions are not met.
+- `BeginSchedule(...)` / `EndSchedule()` start and stop the app-idle monitor with the schedule, so idle time before the target time counts.
+- `Evaluate(...)` checks the current request against CPU, network, battery, and app-idle conditions and returns a message if conditions are not met.
 - `FormatBytes(...)` formats byte rates as KB/s or MB/s.
 
 ### `ShutdownScheduler.Core/Services/IWidgetService.cs`
@@ -457,6 +460,9 @@ This document walks through the current repo as a codebase, with the active WinU
 ### `ShutdownScheduler.Core/Persistence/WidgetSettingsStore.cs`
 - `Load()` reads widget settings from `%LOCALAPPDATA%/ShutdownScheduler/widget-settings.json`.
 - `Save(...)` writes widget settings back to disk.
+
+### `ShutdownScheduler.Core/Persistence/WindowPlacementStore.cs`
+- Loads and saves the main window position, size, and maximized state as JSON in local app data.
 
 ### `ShutdownScheduler.Core/Persistence/AppDetectionExclusionStore.cs`
 - `LoadExecutableNames()` loads and normalizes the executable exclusion list.

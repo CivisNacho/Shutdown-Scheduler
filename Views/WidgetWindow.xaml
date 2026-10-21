@@ -5,75 +5,94 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Shutdown Scheduler Widget">
 
-    <Grid x:Name="Root" Background="Transparent">
+    <!-- The window itself is rounded and outlined by DWM, so the content fills it edge to edge.
+         BorderBrush is never drawn (thickness 0); it only carries the themed DWM border color. -->
+    <Grid
+        x:Name="Root"
+        Padding="14,10"
+        ColumnSpacing="12"
+        Background="{ThemeResource WidgetSurfaceBrush}"
+        BorderBrush="{ThemeResource WidgetBorderBrush}"
+        BorderThickness="0">
+        <Grid.Resources>
+            <Style x:Key="WidgetConditionChipStyle" TargetType="Border">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="22" />
+                <Setter Property="CornerRadius" Value="11" />
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Setter Property="Background" Value="{ThemeResource WidgetBadgeBrush}" />
+            </Style>
+            <Style x:Key="WidgetConditionIconStyle" TargetType="FontIcon">
+                <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="Foreground" Value="{ThemeResource MutedTextBrush}" />
+            </Style>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
         <Border
-            x:Name="WidgetShell"
-            Padding="14,10"
-            CornerRadius="8"
-            Background="{ThemeResource WidgetSurfaceBrush}"
-            BorderBrush="{ThemeResource GlassPanelStrongBorderBrush}"
-            BorderThickness="1">
-            <Grid ColumnSpacing="12" VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <Border
-                    Grid.RowSpan="2"
-                    Width="16"
-                    CornerRadius="2"
-                    Background="{ThemeResource WidgetAccentBrush}">
-                    <StackPanel
-                        x:Name="ConditionIconsPanel"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Vertical"
-                        Spacing="2">
-                        <TextBlock
-                            x:Name="ConditionIconPrimaryText"
-                            FontFamily="Segoe MDL2 Assets"
-                            FontSize="10"
-                            HorizontalAlignment="Center"
-                            Foreground="White" />
-                        <TextBlock
-                            x:Name="ConditionIconSecondaryText"
-                            FontFamily="Segoe MDL2 Assets"
-                            FontSize="10"
-                            HorizontalAlignment="Center"
-                            Foreground="White" />
-                    </StackPanel>
-                </Border>
-
-                <TextBlock
-                    x:Name="ActionText"
-                    Grid.Column="1"
-                    FontSize="12"
-                    FontWeight="SemiBold"
-                    LineHeight="15"
-                    MaxLines="1"
-                    TextWrapping="NoWrap"
-                    TextTrimming="CharacterEllipsis"
-                    Foreground="{ThemeResource SubtleTextBrush}" />
-
-                <TextBlock
-                    x:Name="TimeText"
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    FontFamily="Consolas"
-                    FontStyle="Italic"
-                    FontSize="28"
-                    FontWeight="SemiBold"
-                    LineHeight="31"
-                    MaxLines="1"
-                    TextWrapping="NoWrap"
-                    Foreground="{ThemeResource HeroValueBrush}"
-                    TextTrimming="CharacterEllipsis" />
-            </Grid>
+            x:Name="ActionBadge"
+            Width="40"
+            Height="40"
+            CornerRadius="10"
+            VerticalAlignment="Center"
+            Background="{ThemeResource WidgetAccentBrush}">
+            <FontIcon
+                x:Name="ActionIcon"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="18"
+                Glyph="&#xE7E8;"
+                Foreground="{ThemeResource WidgetOnAccentBrush}" />
         </Border>
+
+        <StackPanel
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Spacing="0">
+            <TextBlock
+                x:Name="ActionText"
+                FontSize="12"
+                FontWeight="SemiBold"
+                CharacterSpacing="20"
+                MaxLines="1"
+                TextWrapping="NoWrap"
+                TextTrimming="CharacterEllipsis"
+                Foreground="{ThemeResource MutedTextBrush}" />
+            <TextBlock
+                x:Name="TimeText"
+                FontFamily="Segoe UI Variable Display, Segoe UI"
+                FontSize="26"
+                FontWeight="SemiBold"
+                LineHeight="30"
+                LineStackingStrategy="BlockLineHeight"
+                MaxLines="1"
+                TextWrapping="NoWrap"
+                TextTrimming="CharacterEllipsis"
+                Foreground="{ThemeResource HeroValueBrush}" />
+        </StackPanel>
+
+        <StackPanel
+            x:Name="ConditionIconsPanel"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="4">
+            <Border x:Name="ConditionChip1" Style="{StaticResource WidgetConditionChipStyle}">
+                <FontIcon x:Name="ConditionIcon1" Style="{StaticResource WidgetConditionIconStyle}" />
+            </Border>
+            <Border x:Name="ConditionChip2" Style="{StaticResource WidgetConditionChipStyle}">
+                <FontIcon x:Name="ConditionIcon2" Style="{StaticResource WidgetConditionIconStyle}" />
+            </Border>
+            <Border x:Name="ConditionChip3" Style="{StaticResource WidgetConditionChipStyle}">
+                <FontIcon x:Name="ConditionIcon3" Style="{StaticResource WidgetConditionIconStyle}" />
+            </Border>
+            <Border x:Name="ConditionChip4" Style="{StaticResource WidgetConditionChipStyle}">
+                <FontIcon x:Name="ConditionIcon4" Style="{StaticResource WidgetConditionIconStyle}" />
+            </Border>
+        </StackPanel>
     </Grid>
 </Window>

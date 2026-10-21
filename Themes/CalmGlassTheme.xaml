@@ -8,6 +8,9 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
+    <!-- Read by the ToggleSwitch template itself; see FormToggleSwitchStyle. -->
+    <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
+
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="AppCornerRadius">10</x:Double>
@@ -82,9 +85,11 @@
             <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FF1C2026" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FF171B20" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FF171B20" />
-            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FFFFFFFF" />
-            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF607086" />
-            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FFF3EDE1" />
+            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FFFBF9F5" />
+            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF3A4656" />
+            <SolidColorBrush x:Key="WidgetOnAccentBrush" Color="#FFFAF8F3" />
+            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FFEFE9DE" />
+            <SolidColorBrush x:Key="WidgetBorderBrush" Color="#FFD9CFBF" />
 
             <Style x:Key="GlassSectionContainerStyle" TargetType="Border">
                 <Setter Property="Padding" Value="18" />
@@ -114,6 +119,10 @@
             </Style>
 
             <Style x:Key="FormToggleSwitchStyle" TargetType="ToggleSwitch">
+                <!-- The switch never shows On/Off text, so drop the room reserved for it: the 154 MinWidth (here and via
+                     ToggleSwitchThemeMinWidth inside the template) and the fixed 12px gap after the track. This keeps it flush right. -->
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Margin" Value="0,0,-12,0" />
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="OnContent" Value="" />
@@ -238,9 +247,11 @@
             <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FFF5F2EC" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FFF7F4EF" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFF7F4EF" />
-            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FF141517" />
-            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF758190" />
-            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FF1E2024" />
+            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FF17181B" />
+            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FF2B323B" />
+            <SolidColorBrush x:Key="WidgetOnAccentBrush" Color="#FFF3EFE7" />
+            <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FF23262B" />
+            <SolidColorBrush x:Key="WidgetBorderBrush" Color="#FF33373E" />
 
             <Style x:Key="GlassSectionContainerStyle" TargetType="Border">
                 <Setter Property="Padding" Value="18" />
@@ -270,6 +281,10 @@
             </Style>
 
             <Style x:Key="FormToggleSwitchStyle" TargetType="ToggleSwitch">
+                <!-- The switch never shows On/Off text, so drop the room reserved for it: the 154 MinWidth (here and via
+                     ToggleSwitchThemeMinWidth inside the template) and the fixed 12px gap after the track. This keeps it flush right. -->
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Margin" Value="0,0,-12,0" />
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="OnContent" Value="" />
@@ -396,7 +411,9 @@
             <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFFFFF00" />
             <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="WidgetAccentBrush" Color="#FFFFFF00" />
+            <SolidColorBrush x:Key="WidgetOnAccentBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="WidgetBadgeBrush" Color="#FF000000" />
+            <SolidColorBrush x:Key="WidgetBorderBrush" Color="#FFFFFF00" />
 
             <Style x:Key="GlassSectionContainerStyle" TargetType="Border">
                 <Setter Property="Padding" Value="18" />
@@ -426,6 +443,10 @@
             </Style>
 
             <Style x:Key="FormToggleSwitchStyle" TargetType="ToggleSwitch">
+                <!-- The switch never shows On/Off text, so drop the room reserved for it: the 154 MinWidth (here and via
+                     ToggleSwitchThemeMinWidth inside the template) and the fixed 12px gap after the track. This keeps it flush right. -->
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Margin" Value="0,0,-12,0" />
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="OnContent" Value="" />

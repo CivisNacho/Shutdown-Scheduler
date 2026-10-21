@@ -88,73 +88,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState x:Name="NarrowState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[1].Width" Value="0" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[2].Width" Value="0" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="Auto" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[1].Height" Value="Auto" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[2].Height" Value="Auto" />
-                        <Setter Target="SectionRegion2.(Grid.Column)" Value="0" />
-                        <Setter Target="SectionRegion3.(Grid.Column)" Value="0" />
-                        <Setter Target="SectionRegion2.(Grid.Row)" Value="1" />
-                        <Setter Target="SectionRegion3.(Grid.Row)" Value="2" />
-                        <Setter Target="SectionRegion3.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="HeaderActionsHost.(Grid.Row)" Value="1" />
-                        <Setter Target="HeaderActionsHost.(Grid.Column)" Value="0" />
-                    </VisualState.Setters>
-                </VisualState>
-
-                <VisualState x:Name="MediumState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="860" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[1].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[2].Width" Value="0" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="*" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[1].Height" Value="Auto" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[2].Height" Value="0" />
-                        <Setter Target="SectionRegion2.(Grid.Column)" Value="1" />
-                        <Setter Target="SectionRegion3.(Grid.Column)" Value="0" />
-                        <Setter Target="SectionRegion2.(Grid.Row)" Value="0" />
-                        <Setter Target="SectionRegion3.(Grid.Row)" Value="1" />
-                        <Setter Target="SectionRegion3.(Grid.ColumnSpan)" Value="2" />
-                        <Setter Target="HeaderActionsHost.(Grid.Row)" Value="0" />
-                        <Setter Target="HeaderActionsHost.(Grid.Column)" Value="1" />
-                    </VisualState.Setters>
-                </VisualState>
-
-                <VisualState x:Name="WideState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="1280" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[1].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.ColumnDefinitions[2].Width" Value="*" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[0].Height" Value="*" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[1].Height" Value="0" />
-                        <Setter Target="MainSectionsGrid.RowDefinitions[2].Height" Value="0" />
-                        <Setter Target="SectionRegion2.(Grid.Column)" Value="1" />
-                        <Setter Target="SectionRegion3.(Grid.Column)" Value="2" />
-                        <Setter Target="SectionRegion2.(Grid.Row)" Value="0" />
-                        <Setter Target="SectionRegion3.(Grid.Row)" Value="0" />
-                        <Setter Target="SectionRegion3.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="HeaderActionsHost.(Grid.Row)" Value="0" />
-                        <Setter Target="HeaderActionsHost.(Grid.Column)" Value="1" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
         <Border
             Padding="14,10,14,12"
             Background="{ThemeResource WindowHeroBackgroundBrush}"
@@ -163,6 +96,7 @@
             CornerRadius="{ThemeResource AppCornerRadius}">
             <Grid ColumnSpacing="14" RowSpacing="8">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -237,15 +171,21 @@
                 </Grid>
 
                 <Border
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Grid.ColumnSpan="2"
                     Height="1"
                     Style="{ThemeResource SectionDividerStyle}" />
             </Grid>
         </Border>
 
-        <Grid
+        <ScrollViewer
+            x:Name="SectionsScroller"
             Grid.Row="1"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Disabled">
+        <Grid
             x:Name="MainSectionsGrid"
             ColumnSpacing="10"
             RowSpacing="10">
@@ -417,7 +357,7 @@
                                 <Grid ColumnSpacing="12" VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock
                                         Text="{Binding MinutesFromNowLabel}"
@@ -427,6 +367,7 @@
                                     <NumberBox
                                         x:Name="RelativeMinutesNumberBox"
                                         Grid.Column="1"
+                                        MinWidth="120"
                                         Text="{Binding RelativeMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Minimum="1"
                                         Value="15"
@@ -477,6 +418,7 @@
                             Visibility="{Binding HasNoConditions, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                         <ListView
+                            x:Name="ConditionsList"
                             Grid.Row="3"
                             ItemsSource="{Binding Conditions}"
                             SelectionMode="None"
@@ -497,13 +439,7 @@
                                         Background="{ThemeResource GlassPanelSecondaryBackgroundBrush}"
                                         BorderBrush="{ThemeResource GlassPanelBorderBrush}"
                                         BorderThickness="1">
-                                        <Grid RowSpacing="10">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
+                                        <StackPanel Spacing="10">
                                             <Grid ColumnSpacing="10" MinHeight="36">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -525,7 +461,7 @@
                                                 Visibility="{Binding IsNetwork, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="152" />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <NumberBox
                                                     Header="{Binding RequiredBelowLabel}"
@@ -535,6 +471,7 @@
                                                     VerticalAlignment="Top" />
                                                 <ComboBox
                                                     Grid.Column="1"
+                                                    MinWidth="110"
                                                     Header="{Binding NetworkShortLabel}"
                                                     ItemsSource="{Binding NetworkUnits}"
                                                     DisplayMemberPath="Label"
@@ -570,7 +507,46 @@
                                                 VerticalAlignment="Top"
                                                 Visibility="{Binding IsBattery, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Style="{ThemeResource GlassNumberBoxStyle}" />
-                                        </Grid>
+
+                                            <StackPanel
+                                                Spacing="10"
+                                                Visibility="{Binding IsAppIdle, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox
+                                                        Header="{Binding AppIdleAppLabel}"
+                                                        ItemsSource="{Binding AppTargets}"
+                                                        DisplayMemberPath="Label"
+                                                        SelectedItem="{Binding SelectedAppTarget, Mode=TwoWay}"
+                                                        AutomationProperties.Name="{Binding AppIdleAppLabel}"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Bottom" />
+                                                    <Button
+                                                        Grid.Column="1"
+                                                        Content="{Binding RefreshAppsLabel}"
+                                                        Click="OnRefreshCloseAppTargetsClick"
+                                                        AutomationProperties.Name="{Binding RefreshAppsLabel}"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{ThemeResource GlassSecondaryButtonStyle}" />
+                                                </Grid>
+                                                <NumberBox
+                                                    Header="{Binding AppIdleMinutesLabel}"
+                                                    Text="{Binding AppIdleMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Value="5"
+                                                    Minimum="1"
+                                                    Maximum="1440"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    SmallChange="1"
+                                                    LargeChange="5"
+                                                    ValidationMode="InvalidInputOverwritten"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Top"
+                                                    Style="{ThemeResource GlassNumberBoxStyle}" />
+                                            </StackPanel>
+                                        </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -582,6 +558,11 @@
                     x:Name="SectionRegion3"
                     Grid.Column="2"
                     Style="{ThemeResource GlassSectionContainerStyle}">
+                    <ScrollViewer
+                        HorizontalScrollBarVisibility="Disabled"
+                        HorizontalScrollMode="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        VerticalScrollMode="Enabled">
                     <Grid RowSpacing="10" MinWidth="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -601,7 +582,7 @@
                             <Grid MinHeight="32" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Loc[EnableWidget]}" Style="{ThemeResource FormRowLabelStyle}" />
                                 <ToggleSwitch
@@ -620,7 +601,7 @@
                             <Grid MinHeight="32" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding ShowOnAllScreensLabel}" Style="{ThemeResource FormRowLabelStyle}" />
                                 <ToggleSwitch
@@ -666,8 +647,10 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top" />
                     </Grid>
+                    </ScrollViewer>
                 </Border>
         </Grid>
+        </ScrollViewer>
 
         <TextBlock
             x:Name="AccessibilityStatusText"

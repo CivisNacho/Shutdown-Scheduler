@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Diagnostics;
 using System.Security.Principal;
 
@@ -6,6 +8,12 @@ namespace Shutdown_Scheduler.Services;
 
 public static class ElevationService
 {
+    // Passed to the elevated instance so it restores the Forced/admin toggle.
+    public const string ForcedAdminArg = "--forced-admin";
+
+    public static bool StartedForForcedAdmin =>
+        IsElevated && Environment.GetCommandLineArgs().Contains(ForcedAdminArg);
+
     public static bool IsElevated
     {
         get
@@ -24,7 +32,7 @@ public static class ElevationService
         var exePath = Process.GetCurrentProcess().MainModule!.FileName;
         try
         {
-            Process.Start(new ProcessStartInfo(exePath)
+            Process.Start(new ProcessStartInfo(exePath, ForcedAdminArg)
             {
                 UseShellExecute = true,
                 Verb = "runas"

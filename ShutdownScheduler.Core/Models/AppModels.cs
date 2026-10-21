@@ -49,7 +49,8 @@ public enum ConditionType
 {
     Network,
     Cpu,
-    Battery
+    Battery,
+    AppIdle
 }
 
 public enum WidgetDisplayMode
@@ -112,6 +113,10 @@ public sealed class ScheduleRequest
     public double CpuThresholdPercent { get; init; }
     public bool BatteryConditionEnabled { get; init; }
     public double BatteryThresholdPercent { get; init; }
+    public bool AppIdleConditionEnabled { get; init; }
+    public string AppIdleProcessName { get; init; } = string.Empty;
+    public string AppIdleProcessLabel { get; init; } = string.Empty;
+    public double AppIdleMinutes { get; init; }
     public string TargetProcessName { get; init; } = string.Empty;
     public string TargetProcessLabel { get; init; } = string.Empty;
     public string DisplaySummary { get; init; } = string.Empty;
@@ -194,6 +199,18 @@ public sealed class ConditionEvaluationResult
     public double BatteryPercent { get; init; }
 }
 
+// Latest activity of the app watched by the app-idle condition. IdleSinceUtc is null while the app is busy.
+public sealed record AppActivitySnapshot(
+    bool IsRunning,
+    bool IsReadable,
+    double CpuPercent,
+    double IoBytesPerSecond,
+    double GpuPercent,
+    DateTime? IdleSinceUtc)
+{
+    public static AppActivitySnapshot Unknown { get; } = new(true, true, 0, 0, 0, null);
+}
+
 public sealed class WidgetSettings
 {
     public bool Enabled { get; set; } = true;
@@ -205,4 +222,13 @@ public sealed class WidgetSettings
     public double Top { get; set; } = 80;
     public double Width { get; set; } = 260;
     public double Height { get; set; } = 72;
+}
+
+public sealed class WindowPlacement
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public bool IsMaximized { get; set; }
 }

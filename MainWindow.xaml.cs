@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Windowing;
 using Microsoft.UI;
 using Shutdown_Scheduler.Models;
+using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler.Services;
 using Shutdown_Scheduler.ViewModels;
 using Shutdown_Scheduler_WinUI.Services;
@@ -28,9 +29,16 @@ namespace Shutdown_Scheduler_WinUI
 {
     public sealed partial class MainWindow : Window
     {
-        private const int DesignWindowWidth = 1440;
-        private const int DesignWindowHeight = 680;
+        // Window sizes are in DIPs so the layout breakpoints behave the same at any display scaling.
+        private const int DefaultWindowWidthDip = 1240;
+        private const int DefaultWindowHeightDip = 700;
+        private const int MinWindowWidthDip = 520;
+        private const int MinWindowHeightDip = 560;
         private const int WindowChromePadding = 24;
+        private const double WideLayoutMinWidth = 1100;
+        private const double MediumLayoutMinWidth = 760;
+        private const double StackedConditionsMaxHeight = 420;
+        private readonly WindowPlacementStore _placementStore = new();
         private readonly SchedulingService _scheduler;
         private readonly LocalizationService _loc;
         private readonly AppSession _session;
@@ -45,8 +53,8 @@ namespace Shutdown_Scheduler_WinUI
         private bool _syncingPickerValues;
         private bool _hasWarmedCloseAppPicker;
         private bool _lastKnownHasActiveSchedule;
-        private int _windowWidth = DesignWindowWidth;
-        private int _windowHeight = DesignWindowHeight;
+        private bool _restoreMaximized;
+        private LayoutMode? _layoutMode;
         private CancellationTokenSource? _closeAppPickerCts;
         private AppWindow? _appWindow;
 
@@ -74,6 +82,7 @@ namespace Shutdown_Scheduler_WinUI
             _closeAppPicker.SelectedItemChanged += OnCloseAppPickerSelectionChanged;
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
             Root.Loaded += OnLoaded;
+            Root.SizeChanged += OnRootSizeChanged;
             Root.ActualThemeChanged += OnRootActualThemeChanged;
             _scheduler.WarningDue += OnWarningDue;
             _scheduler.Error += OnSchedulerError;
@@ -87,6 +96,13 @@ namespace Shutdown_Scheduler_WinUI
             ApplyLocalDateFormat();
             SyncPickersFromViewModel();
             ApplyTitleBarTheme();
+            if (_restoreMaximized)
+            {
+                // Maximizing before the window is shown would flash it at the restored size first.
+                _restoreMaximized = false;
+                (_appWindow?.Presenter as OverlappedPresenter)?.Maximize();
+            }
+
             _lastKnownHasActiveSchedule = ViewModel.HasActiveSchedule;
             if (!_hasWarmedCloseAppPicker)
             {
@@ -119,45 +135,164 @@ namespace Shutdown_Scheduler_WinUI
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_windowHandle);
             _appWindow = AppWindow.GetFromWindowId(windowId);
             _appWindow.Closing += OnAppWindowClosing;
-            ApplyResponsiveWindowBounds(windowId);
-            ApplyWindowIcon();
 
             if (_appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsResizable = false;
-                presenter.IsMaximizable = false;
+                presenter.IsResizable = true;
+                presenter.IsMaximizable = true;
             }
 
-            NativeMethods.RemoveMaximizeButton(_windowHandle);
             NativeMethods.SetWindowSubclass(_windowHandle, _subclassProc, 1, 0);
+            if (!TryRestoreWindowPlacement())
+            {
+                ApplyDefaultWindowBounds(windowId);
+            }
+
+            ApplyWindowIcon();
         }
 
-        private void ApplyResponsiveWindowBounds(Microsoft.UI.WindowId windowId)
+        private enum LayoutMode
+        {
+            Narrow,
+            Medium,
+            Wide
+        }
+
+        private void OnRootSizeChanged(object sender, SizeChangedEventArgs e) => ApplyLayout(e.NewSize.Width);
+
+        // VisualStateManager triggers are never evaluated for a desktop Window's content (it is not a Control),
+        // so the one/two/three-column breakpoints are applied here.
+        private void ApplyLayout(double width)
+        {
+            var mode = width >= WideLayoutMinWidth ? LayoutMode.Wide
+                : width >= MediumLayoutMinWidth ? LayoutMode.Medium
+                : LayoutMode.Narrow;
+            if (mode == _layoutMode)
+            {
+                return;
+            }
+
+            _layoutMode = mode;
+            var star = new GridLength(1, GridUnitType.Star);
+            var auto = GridLength.Auto;
+
+            // Only create the tracks in use: Grid spacing is also added around zero-size tracks,
+            // which would leave an uneven gap on the right and bottom.
+            MainSectionsGrid.ColumnDefinitions.Clear();
+            MainSectionsGrid.RowDefinitions.Clear();
+            var columnCount = mode switch { LayoutMode.Wide => 3, LayoutMode.Medium => 2, _ => 1 };
+            var rowCount = mode switch { LayoutMode.Wide => 1, LayoutMode.Medium => 2, _ => 3 };
+            for (var i = 0; i < columnCount; i++)
+            {
+                MainSectionsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = star });
+            }
+
+            for (var i = 0; i < rowCount; i++)
+            {
+                MainSectionsGrid.RowDefinitions.Add(new RowDefinition { Height = mode == LayoutMode.Wide ? star : auto });
+            }
+
+            // Narrow: schedule, conditions, widget stacked. Medium: schedule | conditions, widget below both.
+            Grid.SetColumn(SectionRegion2, mode == LayoutMode.Narrow ? 0 : 1);
+            Grid.SetRow(SectionRegion2, mode == LayoutMode.Narrow ? 1 : 0);
+            Grid.SetColumn(SectionRegion3, mode == LayoutMode.Wide ? 2 : 0);
+            Grid.SetRow(SectionRegion3, mode switch { LayoutMode.Wide => 0, LayoutMode.Medium => 1, _ => 2 });
+            Grid.SetColumnSpan(SectionRegion3, mode == LayoutMode.Medium ? 2 : 1);
+
+            // Wide sections fill the height and scroll individually; stacked ones scroll as a whole page,
+            // so the conditions list needs a finite height to keep its own scrolling.
+            var stacked = mode != LayoutMode.Wide;
+            SectionsScroller.VerticalScrollMode = stacked ? ScrollMode.Enabled : ScrollMode.Disabled;
+            SectionsScroller.VerticalScrollBarVisibility = stacked ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
+            ConditionsList.MaxHeight = stacked ? StackedConditionsMaxHeight : double.PositiveInfinity;
+
+            var narrow = mode == LayoutMode.Narrow;
+            Grid.SetRow(HeaderActionsHost, narrow ? 1 : 0);
+            Grid.SetColumn(HeaderActionsHost, narrow ? 0 : 1);
+            Grid.SetColumnSpan(HeaderActionsHost, narrow ? 2 : 1);
+            HeaderActionsHost.ColumnDefinitions[0].Width = narrow ? star : auto;
+            HeaderActionsHost.ColumnDefinitions[1].Width = narrow ? star : auto;
+            ScheduleButton.HorizontalAlignment = narrow ? HorizontalAlignment.Stretch : HorizontalAlignment.Left;
+            CancelScheduleButton.HorizontalAlignment = narrow ? HorizontalAlignment.Stretch : HorizontalAlignment.Left;
+        }
+
+        private int ToPixels(int dip)
+            => (int)Math.Round(dip * NativeMethods.GetDpiForWindow(_windowHandle) / 96.0);
+
+        private void ApplyDefaultWindowBounds(Microsoft.UI.WindowId windowId)
         {
             var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
             var workArea = displayArea.WorkArea;
 
-            var availableWidth = Math.Max(1, workArea.Width - WindowChromePadding);
-            var availableHeight = Math.Max(1, workArea.Height - WindowChromePadding);
-            var scale = Math.Min(
-                1.0,
-                Math.Min(
-                    (double)availableWidth / DesignWindowWidth,
-                    (double)availableHeight / DesignWindowHeight));
+            var width = Math.Min(ToPixels(DefaultWindowWidthDip), Math.Max(1, workArea.Width - WindowChromePadding));
+            var height = Math.Min(ToPixels(DefaultWindowHeightDip), Math.Max(1, workArea.Height - WindowChromePadding));
+            var x = workArea.X + Math.Max(0, (workArea.Width - width) / 2);
+            var y = workArea.Y + Math.Max(0, (workArea.Height - height) / 2);
 
-            _windowWidth = Math.Max(1, (int)Math.Round(DesignWindowWidth * scale));
-            _windowHeight = Math.Max(1, (int)Math.Round(DesignWindowHeight * scale));
+            _appWindow?.MoveAndResize(new RectInt32(x, y, width, height));
+        }
 
-            var x = workArea.X + Math.Max(0, (workArea.Width - _windowWidth) / 2);
-            var y = workArea.Y + Math.Max(0, (workArea.Height - _windowHeight) / 2);
+        private bool TryRestoreWindowPlacement()
+        {
+            var saved = _placementStore.Load();
+            if (_appWindow is null || saved is null || saved.Width <= 0 || saved.Height <= 0)
+            {
+                return false;
+            }
 
-            _appWindow?.MoveAndResize(new RectInt32(x, y, _windowWidth, _windowHeight));
+            // Only restore onto a monitor that still exists: the title bar must land inside some work area.
+            var titleBarPoint = new PointInt32(saved.X + saved.Width / 2, saved.Y + 16);
+            var displayArea = DisplayArea.GetFromPoint(titleBarPoint, DisplayAreaFallback.None);
+            if (displayArea is null)
+            {
+                return false;
+            }
+
+            var workArea = displayArea.WorkArea;
+            var width = Math.Min(saved.Width, workArea.Width);
+            var height = Math.Min(saved.Height, workArea.Height);
+            var x = Math.Clamp(saved.X, workArea.X, workArea.X + workArea.Width - width);
+            var y = Math.Clamp(saved.Y, workArea.Y, workArea.Y + workArea.Height - height);
+
+            _appWindow.MoveAndResize(new RectInt32(x, y, width, height));
+            _restoreMaximized = saved.IsMaximized;
+            return true;
+        }
+
+        private void SaveWindowPlacement()
+        {
+            if (_appWindow?.Presenter is not OverlappedPresenter presenter ||
+                presenter.State == OverlappedPresenterState.Minimized)
+            {
+                return;
+            }
+
+            var isMaximized = presenter.State == OverlappedPresenterState.Maximized;
+            var bounds = new RectInt32(_appWindow.Position.X, _appWindow.Position.Y, _appWindow.Size.Width, _appWindow.Size.Height);
+            if (isMaximized && NativeMethods.TryGetRestoredBounds(_windowHandle, out var restored))
+            {
+                // rcNormalPosition is relative to the work area, not the screen.
+                var displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Nearest);
+                restored.X += displayArea.WorkArea.X - displayArea.OuterBounds.X;
+                restored.Y += displayArea.WorkArea.Y - displayArea.OuterBounds.Y;
+                bounds = restored;
+            }
+
+            _placementStore.Save(new WindowPlacement
+            {
+                X = bounds.X,
+                Y = bounds.Y,
+                Width = bounds.Width,
+                Height = bounds.Height,
+                IsMaximized = isMaximized
+            });
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
             _closeAppPicker.SelectedItemChanged -= OnCloseAppPickerSelectionChanged;
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            Root.SizeChanged -= OnRootSizeChanged;
             Root.ActualThemeChanged -= OnRootActualThemeChanged;
             _scheduler.WarningDue -= OnWarningDue;
             _scheduler.Error -= OnSchedulerError;
@@ -182,6 +317,7 @@ namespace Shutdown_Scheduler_WinUI
 
         private void OnAppWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
         {
+            SaveWindowPlacement();
             if (_session.IsExiting || !ViewModel.HasActiveSchedule)
             {
                 return;
@@ -297,12 +433,17 @@ namespace Shutdown_Scheduler_WinUI
             if (message == NativeMethods.WmGetMinMaxInfo)
             {
                 var minMaxInfo = Marshal.PtrToStructure<NativeMethods.MinMaxInfo>(lParam);
-                minMaxInfo.MinTrackSize.X = _windowWidth;
-                minMaxInfo.MinTrackSize.Y = _windowHeight;
-                minMaxInfo.MaxTrackSize.X = _windowWidth;
-                minMaxInfo.MaxTrackSize.Y = _windowHeight;
+                minMaxInfo.MinTrackSize.X = ToPixels(MinWindowWidthDip);
+                minMaxInfo.MinTrackSize.Y = ToPixels(MinWindowHeightDip);
                 Marshal.StructureToPtr(minMaxInfo, lParam, false);
                 return 0;
+            }
+
+            if (message == NativeMethods.WmDpiChanged)
+            {
+                // Apply the rect Windows suggests so the window keeps its logical size on the new monitor.
+                var suggested = Marshal.PtrToStructure<NativeMethods.Rect>(lParam);
+                NativeMethods.MoveWindowTo(hWnd, suggested);
             }
 
             return NativeMethods.DefSubclassProc(hWnd, message, wParam, lParam);
@@ -383,6 +524,12 @@ namespace Shutdown_Scheduler_WinUI
                     ViewModel.AddBatteryConditionCommand,
                     () => ViewModel.CanAddBatteryCondition);
             }
+
+            AddConditionOption(
+                optionsPanel,
+                _loc.T("AppIdleBelow"),
+                ViewModel.AddAppIdleConditionCommand,
+                () => ViewModel.CanAddAppIdleCondition);
 
             void AddConditionOption(StackPanel panel, string label, System.Windows.Input.ICommand command, Func<bool> isEnabled)
             {
@@ -574,6 +721,7 @@ namespace Shutdown_Scheduler_WinUI
                     cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
+                ViewModel.SetRunningApps(runningApps);
 
                 var pickerItems = runningApps
                     .Select(app => new CloseAppPickerItem(app.ProcessName, app.Label, app.ExecutablePath))
@@ -706,23 +854,39 @@ namespace Shutdown_Scheduler_WinUI
         {
             public const uint WmGetMinMaxInfo = 0x0024;
             public const uint WmSetIcon = 0x0080;
+            public const uint WmDpiChanged = 0x02E0;
             public const int IconSmall = 0;
             public const int IconBig = 1;
-            private const int GwlStyle = -16;
-            private const nint WsMaximizeBox = 0x00010000;
-            private const uint SwpNoSize = 0x0001;
-            private const uint SwpNoMove = 0x0002;
             private const uint SwpNoZOrder = 0x0004;
-            private const uint SwpFrameChanged = 0x0020;
+            private const uint SwpNoActivate = 0x0010;
 
             public delegate nint SubclassProc(nint hWnd, uint message, nuint wParam, nint lParam, nuint subclassId, nuint referenceData);
 
-            public static void RemoveMaximizeButton(nint hWnd)
+            public static void MoveWindowTo(nint hWnd, Rect rect)
             {
-                var style = GetWindowLongPtr(hWnd, GwlStyle);
-                SetWindowLongPtr(hWnd, GwlStyle, style & ~WsMaximizeBox);
-                SetWindowPos(hWnd, 0, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZOrder | SwpFrameChanged);
+                SetWindowPos(hWnd, 0, rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top, SwpNoZOrder | SwpNoActivate);
             }
+
+            public static bool TryGetRestoredBounds(nint hWnd, out RectInt32 bounds)
+            {
+                var placement = new WindowPlacementInfo { Length = Marshal.SizeOf<WindowPlacementInfo>() };
+                if (!GetWindowPlacement(hWnd, ref placement))
+                {
+                    bounds = default;
+                    return false;
+                }
+
+                var r = placement.NormalPosition;
+                bounds = new RectInt32(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+                return true;
+            }
+
+            [DllImport("user32.dll")]
+            public static extern uint GetDpiForWindow(nint hWnd);
+
+            [DllImport("user32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool GetWindowPlacement(nint hWnd, ref WindowPlacementInfo placement);
 
             [DllImport("comctl32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -734,12 +898,6 @@ namespace Shutdown_Scheduler_WinUI
 
             [DllImport("comctl32.dll", SetLastError = true)]
             public static extern nint DefSubclassProc(nint hWnd, uint message, nuint wParam, nint lParam);
-
-            [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
-            private static extern nint GetWindowLongPtr(nint hWnd, int nIndex);
-
-            [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
-            private static extern nint SetWindowLongPtr(nint hWnd, int nIndex, nint dwNewLong);
 
             [DllImport("user32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -767,6 +925,26 @@ namespace Shutdown_Scheduler_WinUI
                 public Point MaxPosition;
                 public Point MinTrackSize;
                 public Point MaxTrackSize;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct Rect
+            {
+                public int Left;
+                public int Top;
+                public int Right;
+                public int Bottom;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            private struct WindowPlacementInfo
+            {
+                public int Length;
+                public int Flags;
+                public int ShowCmd;
+                public Point MinPosition;
+                public Point MaxPosition;
+                public Rect NormalPosition;
             }
         }
     }
