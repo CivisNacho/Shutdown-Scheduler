@@ -102,7 +102,8 @@
                             <FontIcon
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Glyph="{Binding ActiveGlyph}"
-                                FontSize="24"
+                                FontSize="{Binding ActiveGlyphFontSize}"
+                                Margin="{Binding ActiveGlyph, Converter={StaticResource GlyphInkMarginConverter}}"
                                 Foreground="{ThemeResource HeroIdleBadgeForegroundBrush}" />
                         </Border>
                         <Border
@@ -112,7 +113,8 @@
                             <FontIcon
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Glyph="{Binding ActiveGlyph}"
-                                FontSize="24"
+                                FontSize="{Binding ActiveGlyphFontSize}"
+                                Margin="{Binding ActiveGlyph, Converter={StaticResource GlyphInkMarginConverter}}"
                                 Foreground="{ThemeResource HeroBadgeForegroundBrush}" />
                         </Border>
                     </Grid>
@@ -128,15 +130,11 @@
                             Style="{StaticResource HeroTitleTextStyle}"
                             Visibility="{Binding HasActiveSchedule, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}" />
                         <TextBlock
-                            Text="{Binding ActiveHeadline}"
-                            Style="{StaticResource HeroCaptionTextStyle}"
-                            Foreground="{ThemeResource SubtleTextBrush}"
-                            ToolTipService.ToolTip="{Binding ActiveSummary}"
-                            Visibility="{Binding HasActiveSchedule, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        <TextBlock
                             Text="{Binding ActiveDetail}"
                             Style="{StaticResource HeroCaptionTextStyle}"
-                            ToolTipService.ToolTip="{Binding ActiveDetail}" />
+                            TextWrapping="NoWrap"
+                            TextTrimming="CharacterEllipsis"
+                            ToolTipService.ToolTip="{Binding ActiveSummary}" />
                     </StackPanel>
                 </Grid>
 
@@ -158,7 +156,7 @@
                         AutomationProperties.Name="{Binding ScheduleButtonLabel}"
                         AutomationProperties.HelpText="Create or replace the current schedule."
                         MinWidth="140"
-                        Style="{StaticResource GlassPrimaryButtonStyle}" />
+                        Style="{StaticResource GlassPrimaryNoHoverButtonStyle}" />
                     <Button
                         x:Name="CancelScheduleButton"
                         Grid.Column="1"
@@ -234,6 +232,12 @@
                                     TabIndex="21"
                                     AutomationProperties.Name="{Binding ForceAdminLabel}"
                                     Visibility="{Binding IsForcedModeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                <CheckBox
+                                    Content="{Binding PreventSleepLabel}"
+                                    IsChecked="{Binding PreventSleep, Mode=TwoWay}"
+                                    TabIndex="22"
+                                    AutomationProperties.Name="{Binding PreventSleepLabel}" />
                             </StackPanel>
 
                             <Border
@@ -243,14 +247,17 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <Grid ColumnSpacing="8">
+                                    <TextBlock Text="{Binding AppToCloseLabel}" TextWrapping="Wrap" />
+                                    <Grid Grid.Row="1" ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ComboBox
-                                            Header="{Binding AppToCloseLabel}"
+                                            VerticalAlignment="Center"
+                                            HeaderTemplate="{x:Null}"
                                             ItemsSource="{Binding Items}"
                                             ItemTemplate="{StaticResource AppTargetTemplate}"
                                             SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
@@ -264,7 +271,7 @@
                                             Click="OnRefreshCloseAppTargetsClick"
                                             AccessKey="R"
                                             TabIndex="23"
-                                            VerticalAlignment="Bottom"
+                                            VerticalAlignment="Center"
                                             ToolTipService.ToolTip="{Binding RefreshAppsLabel}"
                                             AutomationProperties.Name="{Binding RefreshAppsLabel}"
                                             AutomationProperties.HelpText="Refresh the list of running apps."
@@ -275,7 +282,7 @@
                                             <FontIcon Glyph="&#xE72C;" FontSize="14" />
                                         </Button>
                                     </Grid>
-                                    <Grid Grid.Row="1" ColumnSpacing="8">
+                                    <Grid Grid.Row="2" ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />

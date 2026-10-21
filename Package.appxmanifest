@@ -10,7 +10,7 @@
   <Identity
     Name="NachoGarcaGmez.ShutdownScheduler"
     Publisher="CN=DA0ED678-FA79-4B56-A0A1-FF73C9058BEB"
-    Version="1.0.3.0" />
+    Version="1.0.5.0" />
 
   <mp:PhoneIdentity PhoneProductId="a2d357cf-8aa1-42f3-9834-59a90f0b8d2c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

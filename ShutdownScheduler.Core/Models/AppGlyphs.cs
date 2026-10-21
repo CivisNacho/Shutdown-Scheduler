@@ -11,6 +11,16 @@ public static class AppGlyphs
     public const string Remove = ""; // Delete
     public const string Refresh = "";
 
+    // One size for every badge glyph, so the idle clock and the action glyphs look the same. The clock's ink is a
+    // 0.938 em square anchored to the top-left of its em box, so it is nudged right/down by half its 0.062 em gap.
+    public const double BadgeFontSize = 22.5;
+    public const double ClockInkOffset = BadgeFontSize * 0.062 / 2; // ~0.7 px
+
+    public static double FontSizeForAction(PowerAction action) => BadgeFontSize;
+
+    // Offset (px) that centres a glyph's ink in its badge; only the clock glyph needs one.
+    public static double InkOffsetFor(string glyph) => glyph == NoSchedule ? ClockInkOffset : 0;
+
     public static string ForAction(PowerAction action)
         => action switch
         {

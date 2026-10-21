@@ -125,6 +125,7 @@ public sealed class AppSession : IDisposable
         }
 
         _isDisposed = true;
+        SetThreadExecutionState(EsContinuous);
         _scheduler.ScheduleChanged -= OnScheduleChanged;
         _scheduler.Tick -= OnSchedulerTick;
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
@@ -154,6 +155,12 @@ public sealed class AppSession : IDisposable
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainViewModel.PreventSleep))
+        {
+            ApplySleepPrevention();
+            return;
+        }
+
         if (e.PropertyName != nameof(MainViewModel.IsForcedAdmin)) return;
         if (!_viewModel.IsForcedAdmin) return;
         if (ElevationService.IsElevated || _isExiting) return;
@@ -193,7 +200,20 @@ public sealed class AppSession : IDisposable
     {
         _widget.Update(_scheduler.ActiveSchedule);
         RefreshTray();
+        ApplySleepPrevention();
     }
+
+    // The execution state belongs to the calling thread, so this must always run on the UI thread.
+    private void ApplySleepPrevention()
+    {
+        SetThreadExecutionState(_viewModel.PreventSleep && _scheduler.ActiveSchedule is not null ?EsContinuous | EsSystemRequired : EsContinuous);
+    }
+
+    private const uint EsContinuous = 0x80000000;
+    private const uint EsSystemRequired = 0x00000001;
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern uint SetThreadExecutionState(uint esFlags);
 
     private void RefreshTray()
     {

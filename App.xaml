@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="Themes/CalmGlassTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:GlyphInkMarginConverter x:Key="GlyphInkMarginConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

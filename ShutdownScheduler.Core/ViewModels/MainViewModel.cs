@@ -44,6 +44,7 @@ public sealed class MainViewModel : ObservableObject
     private string _activeHeadline = string.Empty;
     private string _activeDetail = string.Empty;
     private string _activeGlyph = AppGlyphs.NoSchedule;
+    private double _activeGlyphFontSize = AppGlyphs.BadgeFontSize;
     private bool _hasActiveSchedule;
     private bool _updatingTimeParts;
     private DateTime? _selectedTargetDateTime;
@@ -160,6 +161,7 @@ public sealed class MainViewModel : ObservableObject
     public string ScheduleButtonLabel => HasActiveSchedule ? _loc.T("ReplaceButton") : _loc.T("ScheduleButton");
     public string CancelButtonLabel => _loc.T("CancelButton");
     public string ForceAdminLabel => _loc.T("ForceAdmin");
+    public string PreventSleepLabel => _loc.T("PreventSleep");
     public string YesLabel => _loc.T("Yes");
     public string NoLabel => _loc.T("No");
     public string DayLabel => _loc.T("Day");
@@ -340,6 +342,7 @@ public sealed class MainViewModel : ObservableObject
     public bool HasNoConditions => !HasConditions;
     public bool WidgetEnabled { get => _widget.Settings.Enabled; set { _widget.Settings.Enabled = value; OnPropertyChanged(); ApplyWidget(); } }
     public bool WidgetShowOnAllScreens { get => _widget.Settings.ShowOnAllScreens; set { _widget.Settings.ShowOnAllScreens = value; OnPropertyChanged(); ApplyWidget(); } }
+    public bool PreventSleep { get => _widget.Settings.PreventSleep; set { _widget.Settings.PreventSleep = value; OnPropertyChanged(); ApplyWidget(); } }
     public double WidgetLeft { get => _widget.Settings.Left; set { _widget.Settings.Left = value; OnPropertyChanged(); } }
     public double WidgetTop { get => _widget.Settings.Top; set { _widget.Settings.Top = value; OnPropertyChanged(); } }
     public double WidgetWidth { get => _widget.Settings.Width; set { _widget.Settings.Width = value; OnPropertyChanged(); } }
@@ -366,6 +369,7 @@ public sealed class MainViewModel : ObservableObject
     public string ActiveHeadline { get => _activeHeadline; set => SetProperty(ref _activeHeadline, value); }
     public string ActiveDetail { get => _activeDetail; set => SetProperty(ref _activeDetail, value); }
     public string ActiveGlyph { get => _activeGlyph; set => SetProperty(ref _activeGlyph, value); }
+    public double ActiveGlyphFontSize { get => _activeGlyphFontSize; set => SetProperty(ref _activeGlyphFontSize, value); }
 
     private void Schedule()
     {
@@ -672,6 +676,7 @@ public sealed class MainViewModel : ObservableObject
             ActiveHeadline = _loc.T("NoScheduleTitle");
             ActiveDetail = _loc.T("NoScheduleHint");
             ActiveGlyph = AppGlyphs.NoSchedule;
+            ActiveGlyphFontSize = AppGlyphs.BadgeFontSize;
             return;
         }
 
@@ -681,11 +686,12 @@ public sealed class MainViewModel : ObservableObject
         ActiveSummary = $"{active.Request.DisplaySummary}\n{_loc.T("Mode")}: {_loc.ExecutionModeLabel(active.Request.ExecutionMode)}\n{_loc.T("Conditions")}: {active.Request.ConditionsSummary}";
         StatusSummary = $"{_loc.T("Status")}: {_loc.StatusLabel(active.Status)}\n{_loc.T("Remaining")}: {Remaining}\n{active.StatusDetails}";
         ActiveHeadline = active.Request.DisplaySummary;
-        // While waiting, the reason (e.g. which condition is still pending) is more useful than the status name.
+        // One line: the headline plus either the waiting reason (e.g. which condition is still pending) or the conditions.
         ActiveDetail = string.IsNullOrWhiteSpace(active.StatusDetails)
-            ? $"{_loc.StatusLabel(active.Status)} · {_loc.T("Conditions")}: {active.Request.ConditionsSummary}"
-            : active.StatusDetails;
+            ? $"{active.Request.DisplaySummary} · {_loc.T("Conditions")}: {active.Request.ConditionsSummary}"
+            : $"{active.Request.DisplaySummary} · {active.StatusDetails}";
         ActiveGlyph = AppGlyphs.ForAction(active.Request.Action);
+        ActiveGlyphFontSize = AppGlyphs.FontSizeForAction(active.Request.Action);
     }
 }
 

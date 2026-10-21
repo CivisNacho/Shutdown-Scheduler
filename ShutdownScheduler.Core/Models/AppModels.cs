@@ -215,6 +215,7 @@ public sealed class WidgetSettings
 {
     public bool Enabled { get; set; } = true;
     public bool ShowOnAllScreens { get; set; }
+    public bool PreventSleep { get; set; }
     public WidgetDisplayMode DisplayMode { get; set; } = WidgetDisplayMode.Countdown;
     public WidgetSizePreset SizePreset { get; set; } = WidgetSizePreset.Medium;
     public WidgetAnchor Anchor { get; set; } = WidgetAnchor.BottomRight;
