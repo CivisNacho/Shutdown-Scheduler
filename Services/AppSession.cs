@@ -156,7 +156,7 @@ public sealed class AppSession : IDisposable
     {
         if (e.PropertyName != nameof(MainViewModel.IsForcedAdmin)) return;
         if (!_viewModel.IsForcedAdmin) return;
-        if (ElevationService.IsElevated) return;
+        if (ElevationService.IsElevated || _isExiting) return;
 
         bool restarted = ElevationService.TryRestartAsAdmin();
         if (restarted)
@@ -172,6 +172,15 @@ public sealed class AppSession : IDisposable
 
     private void OnScheduleChanged(object? sender, EventArgs e)
     {
+        // Background-only instance (window closed to tray) whose schedule just ended
+        // (executed, expired or cancelled from the tray): nothing left to keep it alive,
+        // otherwise it lingers invisibly, which for a ForcedAdmin session means a stray elevated process.
+        if (_mainWindow is null && _scheduler.ActiveSchedule is null && !_isExiting)
+        {
+            ExitApplication();
+            return;
+        }
+
         RefreshBackgroundSurfaces();
     }
 
