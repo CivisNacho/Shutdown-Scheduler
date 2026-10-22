@@ -1,12 +1,14 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI;
 using Shutdown_Scheduler.Models;
 using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler.Services;
 using Shutdown_Scheduler.ViewModels;
+using Shutdown_Scheduler_WinUI.Helpers;
 using Shutdown_Scheduler_WinUI.Services;
 using System;
 using System.Collections.Generic;
@@ -82,6 +84,7 @@ namespace Shutdown_Scheduler_WinUI
             _closeAppPicker.SelectedItemChanged += OnCloseAppPickerSelectionChanged;
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
             Root.Loaded += OnLoaded;
+            HoverTransitionFix.Attach(Root);
             Root.SizeChanged += OnRootSizeChanged;
             TargetDial.TargetChanged += OnTargetDialChanged;
             Root.ActualThemeChanged += OnRootActualThemeChanged;
@@ -104,6 +107,8 @@ namespace Shutdown_Scheduler_WinUI
             }
 
             _lastKnownHasActiveSchedule = ViewModel.HasActiveSchedule;
+            // Templates are applied lazily, so strip once they have settled.
+            Root.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => HoverTransitionFix.StripAll(Root));
             if (!_hasWarmedCloseAppPicker)
             {
                 _hasWarmedCloseAppPicker = true;
