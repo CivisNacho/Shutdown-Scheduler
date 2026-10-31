@@ -3,7 +3,7 @@ using Shutdown_Scheduler.Models;
 
 namespace Shutdown_Scheduler.Services;
 
-public sealed class LocalizationService
+public sealed partial class LocalizationService
 {
     private readonly Dictionary<string, string> _strings;
 
@@ -20,7 +20,7 @@ public sealed class LocalizationService
         CultureInfo.CurrentCulture = culture;
         CultureInfo.CurrentUICulture = culture;
 
-        _strings = culture.TwoLetterISOLanguageName.Equals("es", StringComparison.OrdinalIgnoreCase) ? Spanish : English;
+        _strings = GetStrings(culture.TwoLetterISOLanguageName) ?? English;
     }
 
     public string this[string key] => _strings.TryGetValue(key, out var value) ? value : English.GetValueOrDefault(key, key);
@@ -52,12 +52,27 @@ public sealed class LocalizationService
         return CultureInfo.GetCultureInfo("en-US");
     }
 
-    private static bool IsSupportedCulture(CultureInfo culture)
-    {
-        var languageTag = culture.TwoLetterISOLanguageName;
-        return languageTag.Equals("es", StringComparison.OrdinalIgnoreCase) ||
-               languageTag.Equals("en", StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool IsSupportedCulture(CultureInfo culture)
+        => GetStrings(culture.TwoLetterISOLanguageName) is not null;
+
+    private static Dictionary<string, string>? GetStrings(string languageTag)
+        => languageTag.ToLowerInvariant() switch
+        {
+            "en" => English,
+            "es" => Spanish,
+            "ja" => Japanese,
+            "hi" => Hindi,
+            "zh" => Chinese,
+            "ko" => Korean,
+            "fr" => French,
+            "de" => German,
+            "pl" => Polish,
+            "uk" => Ukrainian,
+            "ar" => Arabic,
+            "pt" => Portuguese,
+            "it" => Italian,
+            _ => null
+        };
 
     private static readonly Dictionary<string, string> English = new()
     {
@@ -128,6 +143,10 @@ public sealed class LocalizationService
         ["EnableWidgetShort"] = "Enable widget",
         ["ForceAdmin"] = "Force admin?",
         ["PreventSleep"] = "Keep PC awake while a timer is active",
+        ["AlertSound"] = "Play alert sounds",
+        ["ConditionsMetTitle"] = "Conditions met",
+        ["ConditionsMetText"] = "The conditions are met. {0} will run in 1 minute.",
+        ["ConditionsMetDetails"] = "Running in {0}",
         ["Yes"] = "Yes",
         ["No"] = "No",
         ["Day"] = "Day",
@@ -211,6 +230,7 @@ public sealed class LocalizationService
         ["ExecutionMode_ForcedAdmin"] = "Forced/admin",
         ["Status_Scheduled"] = "Scheduled",
         ["Status_WaitingForConditions"] = "Waiting for conditions",
+        ["Status_ConditionsMet"] = "Conditions met",
         ["Status_WarningShown"] = "Warning shown",
         ["Status_Postponed"] = "Postponed",
         ["Status_Executing"] = "Executing",
@@ -295,6 +315,10 @@ public sealed class LocalizationService
         ["EnableWidgetShort"] = "Activar widget",
         ["ForceAdmin"] = "¿Forzar admin?",
         ["PreventSleep"] = "Evitar la suspensión mientras haya un temporizador activo",
+        ["AlertSound"] = "Reproducir sonidos de aviso",
+        ["ConditionsMetTitle"] = "Condiciones cumplidas",
+        ["ConditionsMetText"] = "Se han cumplido las condiciones. {0} se ejecutará en 1 minuto.",
+        ["ConditionsMetDetails"] = "Se ejecutará en {0}",
         ["Yes"] = "Sí",
         ["No"] = "No",
         ["Day"] = "Día",
@@ -378,6 +402,7 @@ public sealed class LocalizationService
         ["ExecutionMode_ForcedAdmin"] = "Forzado/admin",
         ["Status_Scheduled"] = "Programado",
         ["Status_WaitingForConditions"] = "Esperando condiciones",
+        ["Status_ConditionsMet"] = "Condiciones cumplidas",
         ["Status_WarningShown"] = "Aviso mostrado",
         ["Status_Postponed"] = "Pospuesto",
         ["Status_Executing"] = "Ejecutando",

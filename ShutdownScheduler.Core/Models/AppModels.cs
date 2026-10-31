@@ -34,9 +34,17 @@ public enum ScheduleStatus
     WaitingForConditions,
     WarningShown,
     Postponed,
+    ConditionsMet,
     Executing,
     Cancelled,
     Expired
+}
+
+public enum ScheduleAlertKind
+{
+    FiveMinutesBefore,
+    OneMinuteBefore,
+    ConditionsMet
 }
 
 public enum NetworkUnit
@@ -183,12 +191,21 @@ public sealed class ActiveSchedule : INotifyPropertyChanged
         }
     }
 
+    public bool FiveMinuteAlertShown { get; set; }
+
+    public bool OneMinuteAlertShown { get; set; }
+
+    // Set once every condition is met; the action runs when this moment is reached.
+    public DateTime? ExecutionPendingUntil { get; set; }
+
     public bool IsRecurring => Request.ScheduleMode is ScheduleMode.Daily or ScheduleMode.Weekly;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
+
+public sealed record ScheduleAlert(ScheduleAlertKind Kind, ActiveSchedule Schedule);
 
 public sealed class ConditionEvaluationResult
 {
@@ -216,6 +233,7 @@ public sealed class WidgetSettings
     public bool Enabled { get; set; } = true;
     public bool ShowOnAllScreens { get; set; }
     public bool PreventSleep { get; set; }
+    public bool AlertSoundEnabled { get; set; } = true;
     public WidgetDisplayMode DisplayMode { get; set; } = WidgetDisplayMode.Countdown;
     public WidgetSizePreset SizePreset { get; set; } = WidgetSizePreset.Medium;
     public WidgetAnchor Anchor { get; set; } = WidgetAnchor.BottomRight;

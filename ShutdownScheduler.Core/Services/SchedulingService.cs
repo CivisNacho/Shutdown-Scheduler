@@ -24,11 +24,13 @@ public sealed class SchedulingService
     public event EventHandler? ScheduleChanged;
     public event EventHandler? Tick;
     public event EventHandler<ActiveSchedule>? WarningDue;
+    public event EventHandler<ScheduleAlert>? AlertDue;
     public event EventHandler<string>? Error;
 
     public void Schedule(ScheduleRequest request)
     {
         ActiveSchedule = new ActiveSchedule(request);
+        MarkAlertsAlreadyPassed(ActiveSchedule, DateTime.Now);
         _conditions.BeginSchedule(request);
         _lastTick = DateTime.Now;
         _timer.Start();
@@ -53,6 +55,8 @@ public sealed class SchedulingService
         if (ActiveSchedule is null) return;
         ActiveSchedule.TargetTime = ActiveSchedule.TargetTime.AddMinutes(5);
         ActiveSchedule.WarningShown = false;
+        ActiveSchedule.ExecutionPendingUntil = null;
+        MarkAlertsAlreadyPassed(ActiveSchedule, DateTime.Now);
         ActiveSchedule.Status = ScheduleStatus.Postponed;
         ScheduleChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -89,16 +93,46 @@ public sealed class SchedulingService
             WarningDue?.Invoke(this, ActiveSchedule);
         }
 
+        if (!ActiveSchedule.FiveMinuteAlertShown && now >= ActiveSchedule.TargetTime.AddMinutes(-5) && now < ActiveSchedule.TargetTime)
+        {
+            ActiveSchedule.FiveMinuteAlertShown = true;
+            AlertDue?.Invoke(this, new ScheduleAlert(ScheduleAlertKind.FiveMinutesBefore, ActiveSchedule));
+        }
+
+        if (!ActiveSchedule.OneMinuteAlertShown && now >= ActiveSchedule.TargetTime.AddMinutes(-1) && now < ActiveSchedule.TargetTime)
+        {
+            ActiveSchedule.OneMinuteAlertShown = true;
+            AlertDue?.Invoke(this, new ScheduleAlert(ScheduleAlertKind.OneMinuteBefore, ActiveSchedule));
+        }
+
         if (now < ActiveSchedule.TargetTime) return;
 
         var conditionResult = _conditions.Evaluate(ActiveSchedule.Request);
         if (!conditionResult.IsSatisfied)
         {
+            // Conditions must hold for the whole grace minute; if they drop, the countdown starts over later.
+            ActiveSchedule.ExecutionPendingUntil = null;
             ActiveSchedule.Status = ScheduleStatus.WaitingForConditions;
             ActiveSchedule.StatusDetails = conditionResult.Message;
             return;
         }
 
+        if (ActiveSchedule.ExecutionPendingUntil is not { } pendingUntil)
+        {
+            ActiveSchedule.ExecutionPendingUntil = now.AddMinutes(1);
+            ActiveSchedule.Status = ScheduleStatus.ConditionsMet;
+            ActiveSchedule.StatusDetails = string.Format(_loc.T("ConditionsMetDetails"), RemainingTimeFormatter.FormatMinutesSeconds(ActiveSchedule.ExecutionPendingUntil.Value - now));
+            AlertDue?.Invoke(this, new ScheduleAlert(ScheduleAlertKind.ConditionsMet, ActiveSchedule));
+            return;
+        }
+
+        if (now < pendingUntil)
+        {
+            ActiveSchedule.StatusDetails = string.Format(_loc.T("ConditionsMetDetails"), RemainingTimeFormatter.FormatMinutesSeconds(pendingUntil - now));
+            return;
+        }
+
+        ActiveSchedule.ExecutionPendingUntil = null;
         ActiveSchedule.Status = ScheduleStatus.Executing;
         try
         {
@@ -113,6 +147,7 @@ public sealed class SchedulingService
         {
             ActiveSchedule.TargetTime = GetNextRecurringTime(ActiveSchedule);
             ActiveSchedule.WarningShown = false;
+            MarkAlertsAlreadyPassed(ActiveSchedule, DateTime.Now);
             ActiveSchedule.Status = ScheduleStatus.Scheduled;
             ActiveSchedule.StatusDetails = string.Empty;
             ScheduleChanged?.Invoke(this, EventArgs.Empty);
@@ -124,6 +159,13 @@ public sealed class SchedulingService
             _timer.Stop();
             ScheduleChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    // A cue whose moment has already passed (e.g. scheduling 3 minutes ahead) is skipped instead of firing at once.
+    private static void MarkAlertsAlreadyPassed(ActiveSchedule schedule, DateTime now)
+    {
+        schedule.FiveMinuteAlertShown = now >= schedule.TargetTime.AddMinutes(-5);
+        schedule.OneMinuteAlertShown = now >= schedule.TargetTime.AddMinutes(-1);
     }
 
     private static DateTime GetNextRecurringTime(ActiveSchedule schedule)

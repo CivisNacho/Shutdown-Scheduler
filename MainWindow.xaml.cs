@@ -79,6 +79,7 @@ namespace Shutdown_Scheduler_WinUI
             InitializeComponent();
             ConfigureWindowSize();
             Root.DataContext = ViewModel;
+            Root.FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             Title = string.Empty;
             CloseAppPickerPanel.DataContext = _closeAppPicker;
             _closeAppPicker.SelectedItemChanged += OnCloseAppPickerSelectionChanged;

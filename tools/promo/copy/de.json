@@ -1,0 +1,19 @@
+{
+  "rtl": false,
+  "headline_scale": 0.9,
+  "shots": [
+    {"h": "Ihr PC fährt herunter, wenn Sie es sagen", "p": "Herunterfahren, Neustarten, Ruhezustand oder Sperren zur genau richtigen Zeit – mit einem Countdown, der immer klar ist."},
+    {"h": "Die Zeit per Uhr einstellen", "p": "Ziehen Sie den Zeiger, nutzen Sie die Kurzbefehle von +15 Min. bis +2 Std. oder wechseln Sie den Tag. Die Restzeit ist immer sichtbar."},
+    {"h": "Warten, bis die Arbeit fertig ist", "p": "Handeln Sie erst, wenn CPU, Netzwerk oder Akku nachlassen oder eine App inaktiv wird."},
+    {"h": "Bedingungen, die zu Ihrem Tag passen", "p": "Kombinieren Sie Netzwerk-, CPU-, Akku- und Inaktivitätsbedingungen. Die Aktion wartet, bis alle erfüllt sind."},
+    {"h": "Der Countdown, immer im Blick", "p": "Ein schwebendes Widget mit der Restzeit und den aktiven Bedingungen, in der Ecke Ihrer Wahl."},
+    {"h": "Hell oder dunkel", "p": "Folgt dem Windows-Design und passt sich jeder Fenstergröße an."}
+  ],
+  "tagline": "Fahren Sie Ihren PC genau im richtigen Moment herunter oder starten Sie ihn neu.",
+  "example_app": "Video wird exportiert…",
+  "chips": ["+15 Min.", "+30 Min.", "+1 Std.", "+2 Std."],
+  "weekdays": ["Fr", "Sa"],
+  "in_fmt": "in {h} Std. {m} Min.",
+  "when": "21.10.2026 20:05",
+  "clock_12h": false
+}

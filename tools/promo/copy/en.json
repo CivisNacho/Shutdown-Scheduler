@@ -1,0 +1,19 @@
+{
+  "rtl": false,
+  "headline_scale": 1.0,
+  "shots": [
+    {"h": "Your PC shuts down when you say so", "p": "Shut down, restart, sleep or lock at the exact time, with a countdown that is always clear."},
+    {"h": "Pick the time by turning the clock", "p": "Drag the hand, use the +15 min to +2 h shortcuts or jump to another day. You always see how long is left."},
+    {"h": "Wait until your work is done", "p": "Only act once CPU, network or battery drop, or when an app goes idle."},
+    {"h": "Conditions that fit your day", "p": "Mix network, CPU, battery and idle apps. The action waits until all of them are met."},
+    {"h": "The countdown, always in sight", "p": "A floating widget with the time left and the active conditions, in the corner you choose."},
+    {"h": "Light or dark", "p": "Follows your Windows theme and adapts to any window size."}
+  ],
+  "tagline": "Shut down, restart or sleep your PC at just the right moment.",
+  "example_app": "Exporting video…",
+  "chips": ["+15 min", "+30 min", "+1 h", "+2 h"],
+  "weekdays": ["Fri", "Sat"],
+  "in_fmt": "in {h} h {m} min",
+  "when": "10/21/2026 8:05:00 PM",
+  "clock_12h": true
+}

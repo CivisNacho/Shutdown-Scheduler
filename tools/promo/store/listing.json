@@ -1,0 +1,277 @@
+{
+  "es": {
+    "Captions": [
+      "Tu PC se apaga cuando tú decidas",
+      "Elige la hora girando el reloj",
+      "Espera a que termine lo que estás haciendo",
+      "Condiciones a tu medida",
+      "La cuenta atrás, siempre a la vista",
+      "Claro u oscuro"
+    ]
+  },
+  "en-us": {
+    "ShortTitle": "AutoShutdown",
+    "ShortDescription": "Take control of your PC's power options by scheduling shutdown, sleep, or app closing under specific conditions.",
+    "Features": [
+      "Automatic shutdown",
+      "Scheduled shutdown",
+      "Automatic restart",
+      "Scheduled restart",
+      "Schedule app closing",
+      "Automatic program closing"
+    ]
+  },
+  "de": {
+    "Title": "Automatische Abschaltung",
+    "ShortTitle": "AutoAbschaltung",
+    "ShortDescription": "Steuern Sie die Energieoptionen Ihres PCs, indem Sie Herunterfahren, Energiesparmodus oder das Schließen von Apps unter bestimmten Bedingungen planen.",
+    "Description": "Automatische Abschaltung ermöglicht es Ihnen, die Energieaktionen Ihres PCs zu steuern, damit Aufgaben, Downloads und Arbeitsabläufe gemäß Ihrem Zeitplan weiterlaufen. Sie können Herunterfahren, Neustart, Energiesparmodus, Ruhezustand, Abmelden, Sperren oder das Schließen einer App einrichten – ausgelöst durch eine bestimmte Uhrzeit, ein relatives Zeitintervall, tägliche oder wöchentliche Zeitpläne oder bestimmte Systembedingungen.\nFunktionen:\n> Planen Sie Herunterfahren, Neustart, Energiesparmodus, Ruhezustand, Abmelden, Sperren oder das Schließen einer ausgewählten App.\n> Legen Sie den Zeitpunkt fest: eine genaue Uhrzeit, ein relatives Zeitintervall oder tägliche bzw. wöchentliche Zeitpläne.\n> Fügen Sie Bedingungen hinzu, damit die Aktion nur ausgeführt wird, wenn bestimmte CPU-, Netzwerk- oder Akku-Schwellenwerte erreicht sind.\n> Sehen Sie Ihren aktiven Zeitplan in einem schwebenden Widget und verwalten Sie ihn über den Infobereich der Taskleiste.",
+    "ReleaseNotes": "- Neues App-Symbol.\n- Verbesserung der Benutzeroberfläche.\n- Fehler behoben, durch den das Herunterfahren als Administrator nicht möglich war.",
+    "Features": [
+      "Automatisches Herunterfahren",
+      "Geplantes Herunterfahren",
+      "Automatischer Neustart",
+      "Geplanter Neustart",
+      "Apps nach Zeitplan schließen",
+      "Programme automatisch schließen"
+    ],
+    "SearchTerms": [
+      "automatisches Herunterfahren",
+      "zeitgesteuerter Shutdown",
+      "Apps automatisch schließen",
+      "Neustart planen",
+      "Apps zeitgesteuert beenden",
+      "PC-Energieverwaltung"
+    ]
+  },
+  "ar": {
+    "Title": "الإيقاف التلقائي",
+    "ShortTitle": "إيقاف تلقائي",
+    "ShortDescription": "تحكّم في خيارات الطاقة بجدولة الإيقاف أو السكون أو إغلاق التطبيقات وفق شروط محددة.",
+    "Description": "يتيح لك الإيقاف التلقائي التحكم في إجراءات الطاقة في جهاز الكمبيوتر، بحيث تستمر المهام والتنزيلات وسير العمل وفق جدولك. يمكنك إعداد إيقاف التشغيل أو إعادة التشغيل أو السكون أو الإسبات أو تسجيل الخروج أو القفل أو إغلاق التطبيق، ويتم تشغيله في وقت محدد أو بعد فترة زمنية نسبية أو وفق جداول يومية أو أسبوعية أو شروط محددة للنظام.\nالميزات:\n> جدولة إيقاف التشغيل أو إعادة التشغيل أو السكون أو الإسبات أو تسجيل الخروج أو القفل أو إغلاق تطبيق محدد.\n> اختر وقت تنفيذ الإجراء: وقت محدد أو فترة زمنية نسبية أو جدول يومي/أسبوعي.\n> أضف شروطًا بحيث لا يُنفَّذ الإجراء إلا عند تحقق حدود معينة لوحدة المعالجة المركزية أو الشبكة أو البطارية.\n> اعرض الجدول النشط في عنصر واجهة عائم وأدِره من منطقة الإشعارات.",
+    "ReleaseNotes": "- أيقونة تطبيق جديدة.\n- تحسينات على الواجهة.\n- إصلاح خطأ كان يمنع الإيقاف بصلاحيات المسؤول.",
+    "Features": [
+      "إيقاف تلقائي",
+      "إيقاف مجدول",
+      "إعادة تشغيل تلقائية",
+      "إعادة تشغيل مجدولة",
+      "جدولة إغلاق التطبيقات",
+      "إغلاق البرامج تلقائيًا"
+    ],
+    "SearchTerms": [
+      "برنامج إيقاف تلقائي",
+      "أداة إيقاف مؤقت",
+      "إغلاق البرامج تلقائيًا",
+      "جدولة إعادة التشغيل",
+      "جدولة إغلاق التطبيقات",
+      "إدارة طاقة الكمبيوتر"
+    ]
+  },
+  "zh": {
+    "Title": "延时关机",
+    "ShortTitle": "自动关机",
+    "ShortDescription": "通过在特定条件下计划关机、睡眠或关闭应用，掌控电脑的电源选项。",
+    "Description": "自动关机可让您控制电脑的电源操作，确保任务、下载和工作流程按您的计划持续运行。您可以设置关机、重启、睡眠、休眠、注销、锁定或关闭应用，触发方式可以是指定时间、相对时间间隔、每日或每周计划，或特定系统条件。\n功能：\n> 计划关机、重启、睡眠、休眠、注销、锁定，或关闭所选应用。\n> 通过指定时间、相对时间间隔或每日/每周计划选择执行时机。\n> 添加条件，仅在 CPU、网络或电池达到特定阈值时才执行操作。\n> 通过浮动小组件查看当前计划，并从系统托盘进行管理。",
+    "ReleaseNotes": "- 全新应用图标。\n- 界面优化。\n- 修复了以管理员身份运行时无法关机的问题。",
+    "Features": [
+      "自动关机",
+      "定时关机",
+      "自动重启",
+      "定时重启",
+      "计划关闭应用",
+      "自动关闭程序"
+    ],
+    "SearchTerms": [
+      "自动关机软件",
+      "定时关机工具",
+      "自动关闭程序",
+      "计划重启",
+      "定时关闭应用",
+      "电脑电源管理"
+    ]
+  },
+  "ko": {
+    "Title": "자동 종료",
+    "ShortTitle": "자동 종료",
+    "ShortDescription": "특정 조건에서 종료, 절전 또는 앱 닫기를 예약하여 PC의 전원 옵션을 제어하세요.",
+    "Description": "자동 종료를 사용하면 PC의 전원 동작을 제어하여 작업, 다운로드, 작업 흐름이 일정에 따라 계속 실행되도록 할 수 있습니다. 특정 시간, 상대 시간 간격, 매일 또는 매주 일정, 또는 특정 시스템 조건에 따라 종료, 다시 시작, 절전, 최대 절전, 로그오프, 잠금 또는 앱 닫기를 설정할 수 있습니다.\n기능:\n> 종료, 다시 시작, 절전, 최대 절전, 로그오프, 잠금 또는 선택한 앱 닫기를 예약합니다.\n> 특정 시간, 상대 시간 간격 또는 매일/매주 일정 중에서 동작 실행 시점을 선택합니다.\n> CPU, 네트워크 또는 배터리 기준값이 충족될 때만 동작이 실행되도록 조건을 추가합니다.\n> 떠 있는 위젯에서 활성 예약을 확인하고 시스템 트레이에서 관리합니다.",
+    "ReleaseNotes": "- 새로운 앱 아이콘.\n- UI 개선.\n- 관리자 권한으로 종료하지 못하던 버그 수정.",
+    "Features": [
+      "자동 종료",
+      "예약 종료",
+      "자동 다시 시작",
+      "예약 다시 시작",
+      "예약된 앱 닫기",
+      "프로그램 자동 닫기"
+    ],
+    "SearchTerms": [
+      "자동 종료 소프트웨어",
+      "예약 종료 도구",
+      "프로그램 자동 닫기",
+      "다시 시작 예약",
+      "앱 예약 종료",
+      "PC 전원 관리"
+    ]
+  },
+  "fr": {
+    "Title": "Arrêt programmé",
+    "ShortTitle": "ArrêtAuto",
+    "ShortDescription": "Maîtrisez les options d'alimentation de votre PC en programmant l'arrêt, la veille ou la fermeture d'applications selon certaines conditions.",
+    "Description": "Arrêt automatique vous permet de contrôler les actions d'alimentation de votre PC afin que les tâches, téléchargements et flux de travail continuent de fonctionner selon votre planning. Vous pouvez programmer un arrêt, un redémarrage, une mise en veille, une hibernation, une déconnexion, un verrouillage ou la fermeture d'une application, déclenché à une heure précise, après un délai relatif, selon un planning quotidien ou hebdomadaire, ou selon des conditions système précises.\nFonctionnalités :\n> Programmez un arrêt, un redémarrage, une mise en veille, une hibernation, une déconnexion, un verrouillage ou la fermeture d'une application sélectionnée.\n> Choisissez le moment d'exécution : une heure précise, un délai relatif, ou un planning quotidien ou hebdomadaire.\n> Ajoutez des conditions pour que l'action ne se déclenche que lorsque les seuils de processeur, de réseau ou de batterie sont atteints.\n> Consultez votre planning actif dans un widget flottant et gérez-le depuis la zone de notification.",
+    "ReleaseNotes": "- Nouvelle icône de l'application.\n- Amélioration de l'interface.\n- Correction d'un bug qui empêchait l'arrêt en tant qu'administrateur.",
+    "Features": [
+      "Arrêt automatique",
+      "Arrêt programmé",
+      "Redémarrage automatique",
+      "Redémarrage programmé",
+      "Programmer la fermeture d'applications",
+      "Fermeture automatique des programmes"
+    ],
+    "SearchTerms": [
+      "arrêt automatique",
+      "minuterie d'arrêt",
+      "fermer programmes auto",
+      "planifier un redémarrage",
+      "fermer apps à heure fixe",
+      "gestion de l'alimentation PC"
+    ]
+  },
+  "hi": {
+    "Title": "स्वचालित शटडाउन",
+    "ShortTitle": "ऑटो शटडाउन",
+    "ShortDescription": "कुछ शर्तों के तहत शटडाउन, स्लीप या ऐप बंद करने का शेड्यूल बनाकर अपने PC के पावर विकल्पों को नियंत्रित करें।",
+    "Description": "स्वचालित शटडाउन आपको अपने PC की पावर क्रियाओं को नियंत्रित करने देता है, ताकि कार्य, डाउनलोड और वर्कफ़्लो आपके शेड्यूल के अनुसार चलते रहें। आप किसी निश्चित समय, सापेक्ष समय-अंतराल, दैनिक या साप्ताहिक शेड्यूल, या विशेष सिस्टम शर्तों पर शटडाउन, रीस्टार्ट, स्लीप, हाइबरनेशन, साइन-आउट, लॉक या ऐप बंद करने की योजना बना सकते हैं।\nविशेषताएँ:\n> शटडाउन, रीस्टार्ट, स्लीप, हाइबरनेशन, साइन-आउट, लॉक या चुने हुए ऐप को बंद करने का शेड्यूल बनाएँ।\n> सटीक समय, सापेक्ष समय-अंतराल या दैनिक/साप्ताहिक शेड्यूल में से चुनें कि क्रिया कब चले।\n> शर्तें जोड़ें ताकि CPU, नेटवर्क या बैटरी की सीमा पूरी होने पर ही क्रिया चले।\n> फ़्लोटिंग विजेट में सक्रिय शेड्यूल देखें और सिस्टम ट्रे से प्रबंधित करें।",
+    "ReleaseNotes": "- नया ऐप आइकन।\n- UI में सुधार।\n- एडमिन के रूप में शटडाउन न हो पाने का बग ठीक किया गया।",
+    "Features": [
+      "स्वचालित शटडाउन",
+      "निर्धारित शटडाउन",
+      "स्वचालित रीस्टार्ट",
+      "निर्धारित रीस्टार्ट",
+      "ऐप बंद करने का शेड्यूल",
+      "प्रोग्राम स्वचालित रूप से बंद करें"
+    ],
+    "SearchTerms": [
+      "ऑटो शटडाउन सॉफ़्टवेयर",
+      "टाइमर शटडाउन टूल",
+      "प्रोग्राम अपने-आप बंद करें",
+      "रीस्टार्ट शेड्यूलर",
+      "ऐप शेड्यूल बंद करें",
+      "पीसी पावर प्रबंधन"
+    ]
+  },
+  "it": {
+    "Title": "Spegnimento automatico",
+    "ShortTitle": "AutoSpegni",
+    "ShortDescription": "Controlla le opzioni di alimentazione del PC pianificando spegnimento, sospensione o chiusura delle app in determinate condizioni.",
+    "Description": "Spegnimento automatico ti permette di controllare le azioni di alimentazione del PC, così attività, download e flussi di lavoro continuano a funzionare secondo la tua pianificazione. Puoi impostare uno spegnimento, riavvio, sospensione, ibernazione, disconnessione, blocco o chiusura di un'app, attivati da un orario preciso, un intervallo di tempo relativo, pianificazioni giornaliere o settimanali, oppure da specifiche condizioni di sistema.\nFunzionalità:\n> Pianifica spegnimento, riavvio, sospensione, ibernazione, disconnessione, blocco o la chiusura di un'app selezionata.\n> Scegli quando eseguire l'azione con un orario preciso, un intervallo di tempo relativo o pianificazioni giornaliere/settimanali.\n> Aggiungi condizioni affinché l'azione venga eseguita solo quando vengono raggiunte soglie specifiche di CPU, rete o batteria.\n> Visualizza la pianificazione attiva in un widget fluttuante e gestiscila dall'area di notifica.",
+    "ReleaseNotes": "- Nuova icona dell'app.\n- Ottimizzazione dell'interfaccia.\n- Corretto un bug che impediva lo spegnimento come amministratore.",
+    "Features": [
+      "Spegnimento automatico",
+      "Spegnimento programmato",
+      "Riavvio automatico",
+      "Riavvio programmato",
+      "Pianifica chiusura app",
+      "Chiusura automatica dei programmi"
+    ],
+    "SearchTerms": [
+      "software spegnimento auto",
+      "strumento spegnimento a tempo",
+      "chiusura automatica programmi",
+      "pianificatore riavvio",
+      "pianifica chiusura app",
+      "gestione energia PC"
+    ]
+  },
+  "ja": {
+    "Title": "自動シャットダウン",
+    "ShortTitle": "自動終了",
+    "ShortDescription": "特定の条件下でシャットダウン、スリープ、アプリ終了を予約し、PCの電源オプションを管理します。",
+    "Description": "自動シャットダウンは、PCの電源操作を制御し、タスク、ダウンロード、作業の流れが予定どおりに実行され続けるようにします。特定の時刻、相対的な時間間隔、毎日または毎週の予約、または特定のシステム条件をきっかけとして、シャットダウン、再起動、スリープ、休止状態、サインアウト、画面のロック、アプリの終了を設定できます。\n機能:\n> シャットダウン、再起動、スリープ、休止状態、サインアウト、ロック、または選択したアプリの終了をスケジュールします。\n> 特定の時刻、相対的な時間間隔、毎日/毎週の予約から実行タイミングを選べます。\n> CPU、ネットワーク、バッテリーの特定のしきい値を満たしたときだけ操作が実行されるよう条件を追加できます。\n> 有効な予約をフローティングウィジェットで確認し、通知領域から管理できます。",
+    "ReleaseNotes": "- 新しいアプリアイコン。\n- UIの改善。\n- 管理者として実行するとシャットダウンできない不具合を修正。",
+    "Features": [
+      "自動シャットダウン",
+      "予約シャットダウン",
+      "自動再起動",
+      "予約再起動",
+      "アプリ終了の予約",
+      "プログラムの自動終了"
+    ],
+    "SearchTerms": [
+      "自動シャットダウン ソフト",
+      "タイマー シャットダウン ツール",
+      "プログラム 自動終了",
+      "再起動 予約",
+      "アプリ 時間指定 終了",
+      "PC 電源管理"
+    ]
+  },
+  "pl": {
+    "Title": "Automatyczne wyłączanie",
+    "ShortTitle": "AutoWyłącz",
+    "ShortDescription": "Przejmij kontrolę nad opcjami zasilania, planując wyłączenie, uśpienie lub zamykanie aplikacji w określonych warunkach.",
+    "Description": "Automatyczne wyłączanie pozwala kontrolować działania zasilania komputera, dzięki czemu zadania, pobierania i procesy pracy działają zgodnie z harmonogramem. Możesz zaplanować wyłączenie, ponowne uruchomienie, uśpienie, hibernację, wylogowanie, blokadę lub zamknięcie aplikacji — uruchamiane o określonej godzinie, po upływie czasu, według harmonogramu dziennego lub tygodniowego albo przy określonych warunkach systemowych.\nFunkcje:\n> Zaplanuj wyłączenie, ponowne uruchomienie, uśpienie, hibernację, wylogowanie, blokadę lub zamknięcie wybranej aplikacji.\n> Wybierz moment wykonania: konkretną godzinę, czas względny albo harmonogram dzienny/tygodniowy.\n> Dodaj warunki, aby akcja uruchamiała się tylko wtedy, gdy zostaną spełnione progi obciążenia procesora, sieci lub baterii.\n> Zobacz aktywny harmonogram w pływającym widżecie i zarządzaj nim z zasobnika systemowego.",
+    "ReleaseNotes": "- Nowa ikona aplikacji.\n- Udoskonalenie interfejsu.\n- Naprawiono błąd uniemożliwiający wyłączenie jako administrator.",
+    "Features": [
+      "Automatyczne wyłączanie",
+      "Zaplanowane wyłączanie",
+      "Automatyczne ponowne uruchamianie",
+      "Zaplanowane ponowne uruchamianie",
+      "Planowanie zamykania aplikacji",
+      "Automatyczne zamykanie programów"
+    ],
+    "SearchTerms": [
+      "program do auto wyłączania",
+      "wyłączanie o czasie",
+      "auto zamykanie programów",
+      "harmonogram restartu",
+      "planowane zamykanie aplikacji",
+      "zarządzanie zasilaniem PC"
+    ]
+  },
+  "pt": {
+    "Title": "Desligamento Programado",
+    "ShortTitle": "AutoDesligar",
+    "ShortDescription": "Assuma o controle das opções de energia agendando desligamento, suspensão ou fechamento de aplicativos sob certas condições.",
+    "Description": "Desligamento Automático permite controlar as ações de energia do seu PC, garantindo que tarefas, downloads e fluxos de trabalho continuem executando de acordo com a sua programação. Você pode configurar um desligamento, reinício, suspensão, hibernação, logoff, bloqueio ou o fechamento de um aplicativo, acionado por um horário específico, um intervalo de tempo relativo, programações diárias ou semanais, ou condições específicas do sistema.\nRecursos:\n> Agende um desligamento, reinício, suspensão, hibernação, logoff, bloqueio ou o fechamento de um aplicativo selecionado.\n> Escolha quando executar a ação usando um horário específico, um intervalo de tempo relativo ou programações diárias/semanais.\n> Adicione condições para que a ação só seja executada quando os limites de CPU, rede ou bateria forem atingidos.\n> Veja sua programação ativa em um widget flutuante e gerencie-a pela bandeja do sistema.",
+    "ReleaseNotes": "- Novo ícone do aplicativo.\n- Refinamento da interface.\n- Corrigido um bug que impedia o desligamento como administrador.",
+    "Features": [
+      "Desligamento automático",
+      "Desligamento programado",
+      "Reinício automático",
+      "Reinício programado",
+      "Agendar fechamento de apps",
+      "Fechamento automático de programas"
+    ],
+    "SearchTerms": [
+      "software desligar automático",
+      "desligamento temporizado",
+      "fechar programas automático",
+      "agendador de reinício",
+      "agendar fechamento de apps",
+      "gerenciamento de energia do PC"
+    ]
+  },
+  "uk": {
+    "Title": "Автоматичне вимкнення",
+    "ShortTitle": "АвтоВимк",
+    "ShortDescription": "Керуйте параметрами живлення ПК, плануючи вимкнення, сон або закриття застосунків за певних умов.",
+    "Description": "Автоматичне вимкнення дозволяє керувати діями живлення вашого ПК, щоб завдання, завантаження та робочі процеси продовжували виконуватися згідно з вашим розкладом. Можна налаштувати вимкнення, перезавантаження, сон, гібернацію, вихід із системи, блокування або закриття застосунку — за конкретним часом, відносним інтервалом, щоденним або щотижневим розкладом чи певними умовами системи.\nМожливості:\n> Плануйте вимкнення, перезавантаження, сон, гібернацію, вихід із системи, блокування або закриття вибраного застосунку.\n> Оберіть час виконання: конкретну годину, відносний інтервал або щоденний/щотижневий розклад.\n> Додавайте умови, щоб дія запускалася лише тоді, коли досягнуто порогів ЦП, мережі або батареї.\n> Переглядайте активний розклад у плаваючому віджеті та керуйте ним із системного лотка.",
+    "ReleaseNotes": "- Новий значок застосунку.\n- Покращення інтерфейсу.\n- Виправлено помилку, через яку не вдавалося вимкнути комп'ютер від імені адміністратора.",
+    "Features": [
+      "Автоматичне вимкнення",
+      "Заплановане вимкнення",
+      "Автоматичне перезавантаження",
+      "Заплановане перезавантаження",
+      "Планування закриття застосунків",
+      "Автоматичне закриття програм"
+    ],
+    "SearchTerms": [
+      "програма автовимкнення",
+      "вимкнення за таймером",
+      "автоматичне закриття програм",
+      "планувальник перезавантаження",
+      "планове закриття застосунків",
+      "керування живленням ПК"
+    ]
+  }
+}

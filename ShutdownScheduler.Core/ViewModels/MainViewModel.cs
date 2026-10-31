@@ -162,6 +162,7 @@ public sealed class MainViewModel : ObservableObject
     public string CancelButtonLabel => _loc.T("CancelButton");
     public string ForceAdminLabel => _loc.T("ForceAdmin");
     public string PreventSleepLabel => _loc.T("PreventSleep");
+    public string AlertSoundLabel => _loc.T("AlertSound");
     public string YesLabel => _loc.T("Yes");
     public string NoLabel => _loc.T("No");
     public string DayLabel => _loc.T("Day");
@@ -343,6 +344,7 @@ public sealed class MainViewModel : ObservableObject
     public bool WidgetEnabled { get => _widget.Settings.Enabled; set { _widget.Settings.Enabled = value; OnPropertyChanged(); ApplyWidget(); } }
     public bool WidgetShowOnAllScreens { get => _widget.Settings.ShowOnAllScreens; set { _widget.Settings.ShowOnAllScreens = value; OnPropertyChanged(); ApplyWidget(); } }
     public bool PreventSleep { get => _widget.Settings.PreventSleep; set { _widget.Settings.PreventSleep = value; OnPropertyChanged(); ApplyWidget(); } }
+    public bool AlertSoundEnabled { get => _widget.Settings.AlertSoundEnabled; set { _widget.Settings.AlertSoundEnabled = value; OnPropertyChanged(); ApplyWidget(); } }
     public double WidgetLeft { get => _widget.Settings.Left; set { _widget.Settings.Left = value; OnPropertyChanged(); } }
     public double WidgetTop { get => _widget.Settings.Top; set { _widget.Settings.Top = value; OnPropertyChanged(); } }
     public double WidgetWidth { get => _widget.Settings.Width; set { _widget.Settings.Width = value; OnPropertyChanged(); } }

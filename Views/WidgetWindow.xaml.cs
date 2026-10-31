@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Shutdown_Scheduler.Models;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Windows.Graphics;
 using WinRT.Interop;
@@ -19,6 +20,7 @@ public sealed partial class WidgetWindow : Window
     public WidgetWindow()
     {
         InitializeComponent();
+        Root.FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         _conditionChips =
         [
             (ConditionChip1, ConditionIcon1),

@@ -76,7 +76,7 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
     // Keeps one widget per target display: every display when ShowOnAllScreens is on, otherwise a single one on the primary display.
     private void SyncWindows()
     {
-        var displays = Settings.ShowOnAllScreens ? DisplayArea.FindAll().ToArray() : Array.Empty<DisplayArea>();
+        var displays = Settings.ShowOnAllScreens ? GetDisplays() : Array.Empty<DisplayArea>();
         var targetCount = Math.Max(1, displays.Length);
 
         while (_windows.Count > targetCount)
@@ -86,18 +86,36 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
             last.Close();
         }
 
+        var firstNew = _windows.Count;
         while (_windows.Count < targetCount)
         {
             var window = new WidgetWindow();
             window.Closed += (_, _) => _windows.Remove(window);
             _windows.Add(window);
-            window.Activate();
         }
 
+        // Size and position are applied before a new window is first shown, otherwise it flashes at the default spot on the primary display.
         for (var i = 0; i < _windows.Count; i++)
         {
             _windows[i].ApplySettings(Settings, displays.Length > 0 ? displays[i] : null);
+            if (i >= firstNew)
+            {
+                _windows[i].Activate();
+            }
         }
+    }
+
+    // Enumerated by index: LINQ's ToArray over the projected WinRT list fails with E_NOINTERFACE and takes the process down.
+    private static DisplayArea[] GetDisplays()
+    {
+        var all = DisplayArea.FindAll();
+        var result = new DisplayArea[all.Count];
+        for (var i = 0; i < result.Length; i++)
+        {
+            result[i] = all[i];
+        }
+
+        return result;
     }
 
     private void ShowWindows()

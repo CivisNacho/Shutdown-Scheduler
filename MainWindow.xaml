@@ -238,6 +238,12 @@
                                     IsChecked="{Binding PreventSleep, Mode=TwoWay}"
                                     TabIndex="22"
                                     AutomationProperties.Name="{Binding PreventSleepLabel}" />
+
+                                <CheckBox
+                                    Content="{Binding AlertSoundLabel}"
+                                    IsChecked="{Binding AlertSoundEnabled, Mode=TwoWay}"
+                                    TabIndex="23"
+                                    AutomationProperties.Name="{Binding AlertSoundLabel}" />
                             </StackPanel>
 
                             <Border

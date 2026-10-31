@@ -1,0 +1,19 @@
+{
+  "rtl": false,
+  "headline_scale": 0.95,
+  "shots": [
+    {"h": "Il PC si spegne quando dici tu", "p": "Spegni, riavvia, sospendi o blocca all'orario esatto, con un conto alla rovescia sempre chiaro."},
+    {"h": "Scegli l'ora girando l'orologio", "p": "Trascina la lancetta, usa le scorciatoie da +15 min a +2 h o passa a un altro giorno. Vedi sempre quanto tempo manca."},
+    {"h": "Aspetta che il lavoro sia finito", "p": "Agisci solo quando CPU, rete o batteria scendono, o quando un'app diventa inattiva."},
+    {"h": "Condizioni adatte alla tua giornata", "p": "Combina condizioni di rete, CPU, batteria e app inattive. L'azione attende finché non sono tutte soddisfatte."},
+    {"h": "Il conto alla rovescia sempre sotto gli occhi", "p": "Un widget fluttuante con il tempo residuo e le condizioni attive, nell'angolo che scegli."},
+    {"h": "Chiaro o scuro", "p": "Segue il tema di Windows e si adatta a qualsiasi dimensione della finestra."}
+  ],
+  "tagline": "Spegni, riavvia o sospendi il PC esattamente al momento giusto.",
+  "example_app": "Esportazione video…",
+  "chips": ["+15 min", "+30 min", "+1 h", "+2 h"],
+  "weekdays": ["ven", "sab"],
+  "in_fmt": "tra {h} h {m} min",
+  "when": "21/10/2026 20:05",
+  "clock_12h": false
+}

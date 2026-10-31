@@ -1,7 +1,9 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Shutdown_Scheduler.Services;
 
@@ -22,6 +24,12 @@ public sealed class WinUiUserNotificationService : IUserNotificationService
         {
             var root = _xamlRootProvider();
             if (root is null) return;
+
+            // WinUI allows one ContentDialog at a time; wait for any dialog already on screen instead of failing.
+            while (VisualTreeHelper.GetOpenPopupsForXamlRoot(root).Count > 0)
+            {
+                await Task.Delay(500);
+            }
 
             var dialog = new ContentDialog
             {

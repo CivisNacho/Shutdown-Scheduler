@@ -1,0 +1,19 @@
+{
+  "rtl": false,
+  "headline_scale": 0.95,
+  "shots": [
+    {"h": "Seu PC desliga quando você mandar", "p": "Desligue, reinicie, suspenda ou bloqueie no horário exato, com uma contagem regressiva sempre clara."},
+    {"h": "Escolha o horário girando o relógio", "p": "Arraste o ponteiro, use os atalhos de +15 min a +2 h ou vá para outro dia. Você sempre vê quanto tempo falta."},
+    {"h": "Espere o trabalho terminar", "p": "Só age quando a CPU, a rede ou a bateria caem, ou quando um aplicativo fica ocioso."},
+    {"h": "Condições para o seu dia", "p": "Combine condições de rede, CPU, bateria e aplicativos ociosos. A ação espera até que todas sejam atendidas."},
+    {"h": "A contagem regressiva sempre à vista", "p": "Um widget flutuante com o tempo restante e as condições ativas, no canto que você escolher."},
+    {"h": "Claro ou escuro", "p": "Segue o tema do Windows e se adapta a qualquer tamanho de janela."}
+  ],
+  "tagline": "Desligue, reinicie ou suspenda seu PC no momento certo.",
+  "example_app": "Exportando vídeo…",
+  "chips": ["+15 min", "+30 min", "+1 h", "+2 h"],
+  "weekdays": ["sex", "sáb"],
+  "in_fmt": "em {h} h {m} min",
+  "when": "21/10/2026 20:05",
+  "clock_12h": false
+}

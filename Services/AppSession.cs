@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Shutdown_Scheduler.Models;
 using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler.ViewModels;
 using Shutdown_Scheduler_WinUI;
@@ -22,6 +23,8 @@ public sealed class AppSession : IDisposable
     private readonly WinUiWidgetService _widget;
     private readonly WinUiTrayService _tray;
     private readonly WinUiAppIconCache _appIconCache;
+    private readonly WinUiUserNotificationService _notifications;
+    private readonly MidiAlertSoundPlayer _alertSound;
     private readonly MainViewModel _viewModel;
     private MainWindow? _mainWindow;
     private bool _isExiting;
@@ -51,9 +54,10 @@ public sealed class AppSession : IDisposable
             CancelSchedule,
             ExitApplication);
         _appIconCache = new WinUiAppIconCache();
+        _alertSound = new MidiAlertSoundPlayer();
 
-        var notifications = new WinUiUserNotificationService(() => _mainWindow?.Content.XamlRoot, dispatcherQueue);
-        _viewModel = new MainViewModel(_scheduler, _widget, _localization, notifications, _battery);
+        _notifications = new WinUiUserNotificationService(() => _mainWindow?.Content.XamlRoot, dispatcherQueue);
+        _viewModel = new MainViewModel(_scheduler, _widget, _localization, _notifications, _battery);
 
         if (ElevationService.StartedForForcedAdmin && _viewModel.IsForcedModeAvailable)
         {
@@ -62,6 +66,7 @@ public sealed class AppSession : IDisposable
 
         _scheduler.ScheduleChanged += OnScheduleChanged;
         _scheduler.Tick += OnSchedulerTick;
+        _scheduler.AlertDue += OnScheduleAlert;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         RefreshBackgroundSurfaces();
     }
@@ -128,7 +133,9 @@ public sealed class AppSession : IDisposable
         SetThreadExecutionState(EsContinuous);
         _scheduler.ScheduleChanged -= OnScheduleChanged;
         _scheduler.Tick -= OnSchedulerTick;
+        _scheduler.AlertDue -= OnScheduleAlert;
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        _alertSound.Dispose();
         _widget.Dispose();
         _tray.Dispose();
         _cpu.Dispose();
@@ -196,6 +203,26 @@ public sealed class AppSession : IDisposable
         _widget.Update(_scheduler.ActiveSchedule);
     }
 
+    private void OnScheduleAlert(object? sender, ScheduleAlert alert)
+    {
+        if (_viewModel.AlertSoundEnabled)
+        {
+            _alertSound.Play(alert.Kind);
+        }
+
+        if (alert.Kind != ScheduleAlertKind.ConditionsMet) return;
+
+        // The popup needs a window to attach to; bring the app up if it lives only in the tray.
+        if (_mainWindow is null)
+        {
+            ShowMainWindow();
+        }
+
+        _notifications.ShowWarning(
+            _localization.T("ConditionsMetTitle"),
+            string.Format(_localization.T("ConditionsMetText"), _localization.ActionLabel(alert.Schedule.Request.Action)));
+    }
+
     private void RefreshBackgroundSurfaces()
     {
         _widget.Update(_scheduler.ActiveSchedule);
@@ -227,9 +254,7 @@ public sealed class AppSession : IDisposable
             try
             {
                 var culture = CultureInfo.GetCultureInfo(language);
-                var languageTag = culture.TwoLetterISOLanguageName;
-                if (languageTag.Equals("es", StringComparison.OrdinalIgnoreCase) ||
-                    languageTag.Equals("en", StringComparison.OrdinalIgnoreCase))
+                if (LocalizationService.IsSupportedCulture(culture))
                 {
                     return culture;
                 }
