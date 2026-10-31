@@ -30,7 +30,7 @@ public sealed partial class WidgetWindow : Window
         Root.ActualThemeChanged += (_, _) => ApplyFrameBorderColor();
     }
 
-    public void ApplySettings(WidgetSettings settings)
+    public void ApplySettings(WidgetSettings settings, DisplayArea? display = null)
     {
         var size = GetSize(settings.SizePreset);
         settings.Width = size.Width;
@@ -39,7 +39,7 @@ public sealed partial class WidgetWindow : Window
         if (_appWindow is not null)
         {
             _appWindow.Resize(size);
-            MoveToAnchor(settings, size);
+            MoveToAnchor(settings, size, display);
         }
 
         Root.Padding = settings.SizePreset switch
@@ -149,14 +149,14 @@ public sealed partial class WidgetWindow : Window
         }
     }
 
-    private void MoveToAnchor(WidgetSettings settings, SizeInt32 size)
+    private void MoveToAnchor(WidgetSettings settings, SizeInt32 size, DisplayArea? display)
     {
         if (_appWindow is null)
         {
             return;
         }
 
-        var displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Primary);
+        var displayArea = display ?? DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Primary);
         var workArea = displayArea.WorkArea;
         const int margin = 18;
 

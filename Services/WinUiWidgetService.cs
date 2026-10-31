@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Shutdown_Scheduler.Models;
 using Shutdown_Scheduler.Persistence;
 using Shutdown_Scheduler_WinUI.Views;
@@ -12,7 +14,7 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
     private readonly WidgetSettingsStore _store;
     private readonly LocalizationService _loc;
     private readonly DispatcherQueue _dispatcherQueue;
-    private WidgetWindow? _window;
+    private readonly List<WidgetWindow> _windows = [];
     private ActiveSchedule? _lastSchedule;
 
     public WinUiWidgetService(WidgetSettingsStore store, LocalizationService loc, DispatcherQueue dispatcherQueue)
@@ -32,14 +34,13 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
         {
             if (!Settings.Enabled)
             {
-                HideWindow();
+                HideWindows();
                 return;
             }
 
             if (_lastSchedule is not null)
             {
-                EnsureWindow();
-                _window?.ApplySettings(Settings);
+                SyncWindows();
                 UpdateWindowText(_lastSchedule);
             }
         });
@@ -54,69 +55,90 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
             {
                 if (schedule is null)
                 {
-                    CloseWindow();
+                    CloseWindows();
                 }
                 else
                 {
-                    HideWindow();
+                    HideWindows();
                 }
 
                 _store.Save(Settings);
                 return;
             }
 
-            EnsureWindow();
-            _window?.ApplySettings(Settings);
+            SyncWindows();
             UpdateWindowText(schedule);
-            _window?.ShowWidget();
+            ShowWindows();
             _store.Save(Settings);
         });
     }
 
-    private void EnsureWindow()
+    // Keeps one widget per target display: every display when ShowOnAllScreens is on, otherwise a single one on the primary display.
+    private void SyncWindows()
     {
-        if (_window is not null)
+        var displays = Settings.ShowOnAllScreens ? DisplayArea.FindAll().ToArray() : Array.Empty<DisplayArea>();
+        var targetCount = Math.Max(1, displays.Length);
+
+        while (_windows.Count > targetCount)
         {
-            return;
+            var last = _windows[^1];
+            _windows.RemoveAt(_windows.Count - 1);
+            last.Close();
         }
 
-        _window = new WidgetWindow();
-        _window.Closed += (_, _) => _window = null;
-        _window.ApplySettings(Settings);
-        _window.Activate();
-    }
-
-    private void HideWindow()
-    {
-        _window?.HideWidget();
-    }
-
-    private void CloseWindow()
-    {
-        if (_window is null)
+        while (_windows.Count < targetCount)
         {
-            return;
+            var window = new WidgetWindow();
+            window.Closed += (_, _) => _windows.Remove(window);
+            _windows.Add(window);
+            window.Activate();
         }
 
-        var window = _window;
-        _window = null;
-        window.Close();
+        for (var i = 0; i < _windows.Count; i++)
+        {
+            _windows[i].ApplySettings(Settings, displays.Length > 0 ? displays[i] : null);
+        }
+    }
+
+    private void ShowWindows()
+    {
+        foreach (var window in _windows.ToArray())
+        {
+            window.ShowWidget();
+        }
+    }
+
+    private void HideWindows()
+    {
+        foreach (var window in _windows.ToArray())
+        {
+            window.HideWidget();
+        }
+    }
+
+    private void CloseWindows()
+    {
+        var windows = _windows.ToArray();
+        _windows.Clear();
+        foreach (var window in windows)
+        {
+            window.Close();
+        }
     }
 
     private void UpdateWindowText(ActiveSchedule schedule)
     {
-        if (_window is null)
-        {
-            return;
-        }
-
         var actionText = _loc.ActionLabel(schedule.Request.Action);
         var remaining = schedule.TargetTime - DateTime.Now;
         var timeText = Settings.DisplayMode == WidgetDisplayMode.ExecutionTime
             ? schedule.TargetTime.ToString("HH:mm")
             : RemainingTimeFormatter.FormatHoursMinutesSeconds(remaining);
         var conditionIcons = GetConditionIcons(schedule.Request);
-        _window.SetScheduleText(actionText, AppGlyphs.ForAction(schedule.Request.Action), timeText, conditionIcons);
+        var actionGlyph = AppGlyphs.ForAction(schedule.Request.Action);
+        foreach (var window in _windows)
+        {
+            window.SetScheduleText(actionText, actionGlyph, timeText, conditionIcons);
+        }
     }
 
     private static string GetConditionIcons(ScheduleRequest request)
@@ -131,6 +153,6 @@ public sealed class WinUiWidgetService : IWidgetService, IDisposable
 
     public void Dispose()
     {
-        CloseWindow();
+        CloseWindows();
     }
 }
